@@ -1,0 +1,86 @@
+[
+  {
+    "id": "sra-SRP058411",
+    "title": "Lea et al. 2016",
+    "class": "Mammalia (Mammals)",
+    "order": "Primates",
+    "species": "Baboon",
+    "genus": "",
+    "technique": [
+      "RRBS"
+    ],
+    "repository": "SRA",
+    "accession": "SRP058411",
+    "url": "https://www.ncbi.nlm.nih.gov/sra?term=SRP058411",
+    "summary": "Effect of resource-availability on epigenome.",
+    "n_individuals": 69,
+    "sex_age": "",
+    "tissue": [
+      "blood"
+    ],
+    "sampling_condition": "All baboons lived in the wild but 39 were wild-feeding, 22 were lodge-feeding (had access to human food scraps), 3 males went from lodge-wild feeding at sexual maturity, 5 males went from wild-lodge feeding at sexual maturity.",
+    "notes": "",
+    "keywords": [],
+    "date_found": "",
+    "references_text": [
+      "Lea et al. 2016"
+    ]
+  },
+  {
+    "id": "sra-PRJNA970398_PRJNA648767",
+    "title": "Anderson et al. 2024",
+    "class": "Mammalia (Mammals)",
+    "order": "Primates",
+    "species": "baboons",
+    "genus": "",
+    "technique": [
+      "RRBS"
+    ],
+    "repository": "SRA",
+    "accession": [
+      "PRJNA970398",
+      "PRJNA648767"
+    ],
+    "url": "https://www.ncbi.nlm.nih.gov/sra?term=PRJNA970398",
+    "summary": "Early-life adversity in wild baboons predicts DNA methylation levels in adulthood.",
+    "n_individuals": 256,
+    "sex_age": "sex and age known",
+    "tissue": [
+      "blood (whole blood)"
+    ],
+    "sampling_condition": "",
+    "notes": "Includes data from Lea et al. 2016 (N=69)",
+    "keywords": [],
+    "date_found": "",
+    "references_text": [
+      "Anderson et al. 2024"
+    ]
+  },
+  {
+    "id": "sra-PRJNA1008620",
+    "title": "Merondun et al. 2019",
+    "class": "Mammalia (Mammals)",
+    "order": "Carnivora",
+    "species": "Lynx canadensis",
+    "genus": "",
+    "technique": [
+      "custom RRBS (epiGBS)"
+    ],
+    "repository": "SRA",
+    "accession": "PRJNA1008620",
+    "url": "https://www.ncbi.nlm.nih.gov/sra?term=PRJNA1008620",
+    "summary": "Population structure and environmental determinants of epigenetic variation.",
+    "n_individuals": 95,
+    "sex_age": "",
+    "tissue": [
+      "epidermis"
+    ],
+    "sampling_condition": "",
+    "notes": "",
+    "keywords": [],
+    "date_found": "",
+    "references_text": [
+      "Merondun et al. 2019"
+    ]
+  }
+]

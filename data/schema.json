@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Animal genomics dataset entry",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "title",
+      "species",
+      "technique",
+      "repository",
+      "accession",
+      "url",
+      "summary"
+    ],
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "class": {
+        "type": "string"
+      },
+      "order": {
+        "type": "string"
+      },
+      "species": {
+        "type": "string"
+      },
+      "genus": {
+        "type": "string"
+      },
+      "technique": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "repository": {
+        "type": "string"
+      },
+      "accession": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "url": {
+        "type": "string",
+        "format": "uri"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "n_individuals": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "sex_age": {
+        "type": "string"
+      },
+      "tissue": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "sampling_condition": {
+        "type": "string"
+      },
+      "notes": {
+        "type": "string"
+      },
+      "keywords": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "date_found": {
+        "type": "string"
+      },
+      "citations": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "references_text": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "allOf": [
+      {
+        "anyOf": [
+          {
+            "required": [
+              "citations"
+            ]
+          },
+          {
+            "required": [
+              "references_text"
+            ]
+          }
+        ]
+      }
+    ],
+    "additionalProperties": false
+  }
+}

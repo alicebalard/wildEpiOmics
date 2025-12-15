@@ -1,0 +1,11 @@
+
+body { font: 16px/1.5 system-ui, sans-serif; margin: 0; padding: 1rem; }
+header, .filters, .actions { margin-bottom: 1rem; }
+header h1 { margin: 0 0 .25rem 0; }
+nav a { margin-right: .75rem; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: .5rem; border-bottom: 1px solid #ddd; vertical-align: top; }
+thead th { position: sticky; top: 0; background: #fafafa; }
+.filters select, .filters input { margin-right: .5rem; }
+button { margin-right: .5rem; }
+.badge { display: inline-block; padding: .1rem .4rem; background: #eef; color: #334; border-radius: .25rem; margin-right: .25rem; font-size: 0.85em; }

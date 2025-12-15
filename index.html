@@ -1,0 +1,64 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>wildEpiOmics — Open Animal Epigenomics Datasets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <!-- Optional: Citation.js for APA/BibTeX formatting -->
+  <script src="https://cdn.jsdelivr.net/npm/@citation-js/core@0.7.9/dist/citation.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@citation-js/plugin-bibtex@0.7.9/dist/plugin-bibtex.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>wildEpiOmics</h1>
+    <p>A curated, community-maintained list of <strong>openly available animal epigenomics</strong> datasets.</p>
+    <nav>
+      <a href="https://github.com/your-username/wildEpiOmics">Repository</a>
+      <a href="https://github.com/your-username/wildEpiOmics/issues">Submit an issue</a>
+      <a href="https://github.com/your-username/wildEpiOmics/pulls">Submit a PR</a>
+    </nav>
+  </header>
+
+  <section class="filters">
+    <input type="text" id="searchText" placeholder="Search title/summary/keywords…" />
+    <select id="speciesFilter"><option value="">Species (all)</option></select>
+    <select id="genusFilter"><option value="">Genus (all)</option></select>
+    <select id="techniqueFilter"><option value="">Technique (all)</option></select>
+    <select id="repoFilter"><option value="">Repository (all)</option></select>
+    <button id="clearFilters">Clear filters</button>
+  </section>
+
+  <section>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Title</th>
+          <th>Species</th>
+          <th>Technique</th>
+          <th>Repository</th>
+          <th>Accession</th>
+          <th>N</th>
+          <th>Tissue</th>
+          <th>Summary</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="actions">
+    <button id="copyAPA">Copy citations (APA or as provided)</button>
+    <button id="downloadBib">Download citations (.bib or .txt)</button>
+    <span id="selectionCount">0 selected</span>
+  </section>
+
+  <footer>
+    <p>Maintained by the community. Data licenses vary by entry.</p>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
