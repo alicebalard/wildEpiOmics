@@ -1,5 +1,7 @@
-doi: 10.1038/example
+doi: 10.1038/s41586-020-2012-7
 taxid: 9606
-individuals: 10
-data_url: https://example.com
+individuals: 838
+data_url: https://ega-archive.org/studies/EGAS00001000000
 method: WGS
+notes: |
+  Demo entry showing expected fields. Add more entries in separate YAML files.

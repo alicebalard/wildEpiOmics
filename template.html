@@ -1,1 +1,47 @@
-<!doctype html><html><body><!-- INJECT_DATA --><div id='cards'></div><script src='script.js'></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biodiversity Study Catalog</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="filters" aria-label="Filters">
+      <h2>Filters</h2>
+
+      <label>Method
+        <select id="f-method" multiple aria-label="Filter by method"></select>
+      </label>
+
+      <label>Order
+        <select id="f-order" multiple aria-label="Filter by order"></select>
+      </label>
+
+      <label>Class
+        <select id="f-class" multiple aria-label="Filter by class"></select>
+      </label>
+
+      <label>NCBI TaxID
+        <input id="f-taxid" type="text" placeholder="e.g. 9606 or 9606, 10090" aria-label="Filter by NCBI TaxID" />
+      </label>
+
+      <button id="btn-clear">Clear filters</button>
+
+      <hr />
+
+      <button id="btn-download-bib">Download BibTeX of selected</button>
+      <small id="sel-count" aria-live="polite"></small>
+    </aside>
+
+    <main class="content">
+      <h1>Biodiversity Studies</h1>
+      <div id="cards"></div>
+    </main>
+  </div>
+
+  <!-- INJECT_DATA -->
+  <script src="script.js"></script>
+</body>
+</html>
