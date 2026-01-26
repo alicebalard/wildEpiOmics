@@ -1,1 +1,1 @@
-console.log('placeholder build');
+console.log('build placeholder');

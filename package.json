@@ -1,1 +1,12 @@
-{"name": "starter", "version": "1.0.0"}
+{
+  "name": "biodiversity-site",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.1",
+    "marked": "^12.0.2"
+  }
+}
