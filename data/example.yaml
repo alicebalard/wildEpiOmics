@@ -1,0 +1,5 @@
+doi: 10.1038/example
+taxid: 9606
+individuals: 10
+data_url: https://example.com
+method: WGS
