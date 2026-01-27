@@ -61,12 +61,32 @@ function render() {
     const card = document.createElement('div');
     card.className = 'card';
 
-    const t = document.createElement('h3');
-    t.textContent = e.species ? `${e.species}` : `TaxID ${e.taxid}`;
-    card.appendChild(t);
+    // ---- IMAGE ----
+    if (e.image) {
+      const img = document.createElement('img');
+      img.src = e.image;
+      img.alt = e.common_name || e.species || 'Species image';
+      img.className = 'species-image';
+      card.appendChild(img);
+    }
 
+    // ---- HEADER ----
+    const title = document.createElement('h3');
+    title.textContent = e.species || `TaxID ${e.taxid}`;
+    card.appendChild(title);
+
+    // ---- COMMON NAME ----
+    if (e.common_name) {
+      const cn = document.createElement('div');
+      cn.className = 'common-name';
+      cn.textContent = e.common_name;
+      card.appendChild(cn);
+    }
+
+    // ---- META ----
     const meta = document.createElement('div');
     meta.className = 'meta';
+
     meta.innerHTML = `
       <span><strong>TaxID:</strong> ${e.taxid}</span>
       <span><strong>Order:</strong> ${e.order || '-'}</span>
@@ -76,25 +96,34 @@ function render() {
     `;
     card.appendChild(meta);
 
+    // ---- LINKS ----
     const links = document.createElement('div');
     links.className = 'actions';
+
     const doiHref = `https://doi.org/${encodeURIComponent(e.doi)}`;
     const dataHref = e.data_url;
+
     links.innerHTML = `
-      <label><input type="checkbox" class="checkbox" data-doi="${e.doi}" ${selected.has(e.doi) ? 'checked' : ''}/> Select</label>
+      <label>
+        <input type="checkbox" class="checkbox" data-doi="${e.doi}" ${selected.has(e.doi) ? 'checked' : ''}/>
+        Select
+      </label>
       <a class="link" href="${doiHref}" target="_blank" rel="noopener">DOI</a>
       <a class="link" href="${dataHref}" target="_blank" rel="noopener">Source data</a>
     `;
     card.appendChild(links);
 
+    // ---- NOTES ----
     if (e.notes) {
       const details = document.createElement('details');
       const summary = document.createElement('summary');
       summary.textContent = 'Notes';
       details.appendChild(summary);
+
       const pre = document.createElement('pre');
       pre.style.whiteSpace = 'pre-wrap';
       pre.textContent = e.notes;
+
       details.appendChild(pre);
       card.appendChild(details);
     }
@@ -102,10 +131,13 @@ function render() {
     $cards.appendChild(card);
   }
 
+  // checkbox event listeners
   document.querySelectorAll('.checkbox').forEach(cb => {
     cb.addEventListener('change', (ev) => {
       const doi = ev.target.getAttribute('data-doi');
-      if (ev.target.checked) selected.add(doi); else selected.delete(doi);
+      if (ev.target.checked) selected.add(doi);
+      else selected.delete(doi);
+
       $selCount.textContent = selected.size ? `${selected.size} selected` : '';
     });
   });
