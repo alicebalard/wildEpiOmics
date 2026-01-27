@@ -48,13 +48,20 @@ function readAllData() {
 // BibTeX helpers
 // --------------------
 async function fetchBibtex(doi) {
-  const url = `https://doi.org/${encodeURIComponent(doi)}`;
+  const url = `https://api.crossref.org/works/${encodeURIComponent(doi)}/transform/application/x-bibtex`;
   return new Promise((resolve, reject) => {
-    const opts = { headers: { Accept: "application/x-bibtex" } };
-    https.get(url, opts, (res) => {
-      let out = "";
-      res.on("data", (chunk) => (out += chunk));
-      res.on("end", () => resolve(out.trim()));
+    https.get(url, (res) => {
+      let data = "";
+      res.on("data", chunk => (data += chunk));
+      res.on("end", () => {
+        // Some providers return empty or HTML if the DOI does not support BibTeX
+        if (data.startsWith("<")) {
+          console.warn("⚠️ Crossref returned HTML for", doi);
+          resolve(""); // avoid breaking the map
+        } else {
+          resolve(data.trim());
+        }
+      });
     }).on("error", reject);
   });
 }
