@@ -63,9 +63,25 @@ function httpGet(url, headers = {}) {
 }
 
 // GET expecting JSON
-async function httpGetJson(url, headers = {}) {
-  const txt = await httpGet(url, headers);
-  return JSON.parse(txt);
+function httpGetJson(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const request = https.request(url, options, (res) => {
+      let data = "";
+      res.on("data", chunk => data += chunk);
+      res.on("end", () => {
+        try { resolve(JSON.parse(data)); }
+        catch (err) { reject(err); }
+      });
+    });
+
+    request.on("error", reject);
+
+    if (options.body) {
+      request.write(options.body);
+    }
+
+    request.end();
+  });
 }
 
 // --------------------------------------------------------------
@@ -80,34 +96,45 @@ async function enrichTaxonomy(taxid) {
     image: null
   };
 
-  // ---- 1. Main NCBI taxonomy data
   try {
-    const url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=${taxid}&retmode=json`;
-    const json = await httpGetJson(url);
-    const t = json.Taxon;
+    // 1. Fetch main taxon info
+    const mainUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
+    const mainJson = await httpGetJson(mainUrl);
+    const mainNode = mainJson?.taxonomy_nodes?.[0]?.taxonomy;
 
-    out.species = t.ScientificName || null;
-    out.common_name = t.CommonName || null;
-
-    if (Array.isArray(t.LineageEx)) {
-      for (const lvl of t.LineageEx) {
-        if (lvl.Rank === "order") out.order = lvl.ScientificName;
-        if (lvl.Rank === "class") out.class = lvl.ScientificName;
-      }
+    if (!mainNode) {
+      console.warn("No taxonomy found for", taxid);
+      return out;
     }
-  } catch (err) {
-    console.warn("Taxonomy fetch failed for", taxid);
-  }
 
-  // ---- 2. NCBI picture
-  try {
-    const url = `https://api.ncbi.nlm.nih.gov/datasets/v1/taxonomy/taxon/${taxid}`;
-    const json = await httpGetJson(url);
-    if (json.taxon?.images?.length) {
-      out.image = json.taxon.images[0].url;
+    // species + common names
+    out.species = mainNode.organism_name || null;
+    out.common_name = mainNode.genbank_common_name || mainNode.common_name || null;
+
+    // 2. Fetch lineage details in batch
+    const lineageIds = mainNode.lineage || [];
+
+    const batchResponse = await httpGetJson("https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ tax_ids: lineageIds })
+    });
+
+    const lineageNodes = batchResponse.taxonomy_nodes || [];
+
+    // 3. Extract rank-based entries
+    for (const node of lineageNodes) {
+      const t = node.taxonomy;
+      if (!t) continue;
+
+      if (t.rank === "ORDER" && !out.order) out.order = t.organism_name;
+      if (t.rank === "CLASS" && !out.class) out.class = t.organism_name;
     }
+
   } catch (err) {
-    console.warn("No image for taxid", taxid);
+    console.warn("❗ Taxonomy enrichment failed for", taxid, err);
   }
 
   return out;
