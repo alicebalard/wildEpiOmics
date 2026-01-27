@@ -3,12 +3,6 @@ name: Build & Deploy (GitHub Pages)
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'data/**'
-      - '*.js'
-      - '*.html'
-      - '*.css'
-      - '.github/workflows/**'
 
 permissions:
   contents: read
@@ -26,6 +20,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug workspace
+        run: |
+          pwd
+          ls -la
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -33,14 +32,16 @@ jobs:
 
       - name: Install
         run: npm ci
+        working-directory: .
 
       - name: Build
         run: npm run build
+        working-directory: .
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
 
   deploy:
     needs: build
