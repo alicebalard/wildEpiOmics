@@ -72,6 +72,7 @@ let html = fs.readFileSync(templatePath, "utf8");
 
 // Load data
 const data = readAllData();
+const bibMap = await buildBibtexMap(data);
 
 // Inject data
 const injection = `
@@ -92,3 +93,35 @@ copyFile("script.js");
 
 console.log(`✅ Build complete: ${outPath}`);
 console.log(`📊 Records loaded: ${data.length}`);
+
+import https from "https";
+
+async function fetchBibtex(doi) {
+  const url = `https://doi.org/${encodeURIComponent(doi)}`;
+  return new Promise((resolve, reject) => {
+    const opts = {
+      headers: {
+        Accept: "application/x-bibtex"
+      }
+    };
+
+    https.get(url, opts, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => resolve(data.trim()));
+    }).on("error", reject);
+  });
+}
+
+async function buildBibtexMap(data) {
+  const map = {};
+  for (const entry of data) {
+    if (!entry.doi) continue;
+    try {
+      map[entry.doi] = await fetchBibtex(entry.doi);
+    } catch (err) {
+      console.warn("Failed to fetch BibTeX for", entry.doi);
+    }
+  }
+  return map;
+}
