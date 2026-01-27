@@ -1,0 +1,58 @@
+name: Parse Reviewed Entry
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  process:
+    if: github.event.label.name == 'reviewed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse issue → data/*.yaml
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            const m = body.match(/```yaml\n([\s\S]*?)\n```/);
+            if (!m) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: 'No ```yaml code block found.'
+              });
+              return;
+            }
+            const yaml = m[1];
+
+            const tax = (yaml.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
+            const doi = (yaml.match(/doi:\s*([^\n\r\s]+)/i) || [])[1] || 'no-doi';
+            const year = (yaml.match(/\b(19|20)\d{2}\b/) || [])[0] || 'y';
+            const base = `data/${tax}_${year}`.replace(/[^a-zA-Z0-9_\-\/]/g,'');
+            let filename = `${base}.yaml`;
+            if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
+            fs.writeFileSync(filename, yaml);
+
+            await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
+            await exec.exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
+            await exec.exec('git', ['add', filename]);
+            await exec.exec('git', ['commit', '-m', `Add entry from Issue #${issue.number}`]);
+            await exec.exec('git', ['push']);
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `Saved as \`${filename}\``
+            });
+            await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number, state: 'closed' });
