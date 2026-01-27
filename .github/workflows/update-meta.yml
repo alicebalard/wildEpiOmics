@@ -20,12 +20,12 @@ jobs:
         run: |
           COUNT=$(ls data/*.yaml 2>/dev/null | wc -l)
           mkdir -p .meta
-          echo "{\"schemaVersion\": 1, \"label\": \"studies\", \"message\": \"$COUNT\", \"color\": \"informational\"}" > .meta/study_count.json
+          printf "{\"schemaVersion\":1,\"label\":\"studies\",\"message\":\"$COUNT\",\"color\":\"informational\"}" > .meta/study_count.json
 
       - name: Update last deploy time
         run: |
           DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
-          echo "{\"schemaVersion\":1,\"label\":\"last deploy\",\"message\":\"$DATE\",\"color\":\"success\"}" > .meta/last_deploy.json
+          printf "{\"schemaVersion\":1,\"label\":\"last deploy\",\"message\":\"$DATE\",\"color\":\"success\"}" > .meta/last_deploy.json
 
       - name: Commit metadata
         run: |
