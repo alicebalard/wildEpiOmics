@@ -1,3 +1,7 @@
+## Deployment Status
+
+[![Deploy to GitHub Pages](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml)
+
 # Biodiversity Study Catalog
 
 Static site that lists studies with DOI, NCBI TaxID, number of individuals, source-data link, and method.
