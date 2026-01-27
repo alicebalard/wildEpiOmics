@@ -29,152 +29,144 @@ const DIST_DIR = path.join(ROOT, "dist");
 // HELPERS
 // --------------------------------------------------------------
 function ensureDir(dir) {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
 function readAllData() {
-  const all = [];
-  if (!fs.existsSync(DATA_DIR)) return all;
+    const all = [];
+    if (!fs.existsSync(DATA_DIR)) return all;
 
-  for (const file of fs.readdirSync(DATA_DIR)) {
-    const ext = path.extname(file).toLowerCase();
-    if (![".yaml", ".yml", ".json"].includes(ext)) continue;
+    for (const file of fs.readdirSync(DATA_DIR)) {
+	const ext = path.extname(file).toLowerCase();
+	if (![".yaml", ".yml", ".json"].includes(ext)) continue;
 
-    try {
-      const content = fs.readFileSync(path.join(DATA_DIR, file), "utf8");
-      const parsed = ext === ".json" ? JSON.parse(content) : parseYAML(content);
-      all.push(parsed);
-    } catch (err) {
-      console.error("❌ Failed parsing", file, err);
+	try {
+	    const content = fs.readFileSync(path.join(DATA_DIR, file), "utf8");
+	    const parsed = ext === ".json" ? JSON.parse(content) : parseYAML(content);
+	    all.push(parsed);
+	} catch (err) {
+	    console.error("❌ Failed parsing", file, err);
+	}
     }
-  }
-  return all;
+    return all;
 }
 
 // Simple GET returning text
 function httpGet(url, headers = {}) {
-  return new Promise((resolve, reject) => {
-    https.get(url, { headers }, (res) => {
-      let data = "";
-      res.on("data", (chunk) => (data += chunk));
-      res.on("end", () => resolve(data));
-    }).on("error", reject);
-  });
+    return new Promise((resolve, reject) => {
+	https.get(url, { headers }, (res) => {
+	    let data = "";
+	    res.on("data", (chunk) => (data += chunk));
+	    res.on("end", () => resolve(data));
+	}).on("error", reject);
+    });
 }
 
 // GET expecting JSON
 function httpGetJson(url, options = {}) {
-  return new Promise((resolve, reject) => {
-    const request = https.request(url, options, (res) => {
-      let data = "";
-      res.on("data", chunk => data += chunk);
-      res.on("end", () => {
-        try { resolve(JSON.parse(data)); }
-        catch (err) { reject(err); }
-      });
+    return new Promise((resolve, reject) => {
+	const request = https.request(url, options, (res) => {
+	    let data = "";
+	    res.on("data", chunk => data += chunk);
+	    res.on("end", () => {
+		try { resolve(JSON.parse(data)); }
+		catch (err) { reject(err); }
+	    });
+	});
+
+	request.on("error", reject);
+
+	if (options.body) {
+	    request.write(options.body);
+	}
+
+	request.end();
     });
-
-    request.on("error", reject);
-
-    if (options.body) {
-      request.write(options.body);
-    }
-
-    request.end();
-  });
-}
+} 
 
 // --------------------------------------------------------------
 // NCBI TAXONOMY ENRICHMENT
 // --------------------------------------------------------------
 async function enrichTaxonomy(taxid) {
-  const out = {
-    species: null,
-    order: null,
-    class: null,
-    common_name: null,
-    image: null
-  };
+    const out = {
+	species: null,
+	order: null,
+	class: null,
+	common_name: null,
+	image: null
+    };
 
-  try {
-    // 1. Fetch main taxon info
-    const mainUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
-    const mainJson = await httpGetJson(mainUrl);
-    const mainNode = mainJson?.taxonomy_nodes?.[0]?.taxonomy;
+    try {
+	// 1. Fetch main taxon info
+	const mainUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
+	const mainJson = await httpGetJson(mainUrl);
+	const mainNode = mainJson?.taxonomy_nodes?.[0]?.taxonomy;
 
-    if (!mainNode) {
-      console.warn("No taxonomy found for", taxid);
-      return out;
+	if (!mainNode) {
+	    console.warn("No taxonomy found for", taxid);
+	    return out;
+	}
+
+	// species + common names
+	out.species = mainNode.organism_name || null;
+	out.common_name = mainNode.genbank_common_name || mainNode.common_name || null;
+
+	// 2. Fetch lineage details in batch
+	const lineageIds = mainNode.lineage || [];
+
+	// 3. Extract rank-based entries
+	for (const lineageId of lineageIds) {
+	    const batchUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${lineageId}`;
+	    const batchResponse = await httpGetJson(batchUrl);
+	    const t = batchResponse?.taxonomy_nodes?.[0]?.taxonomy || null;
+	    
+	    if (!t) continue;
+	    if (t.rank === "ORDER" && !out.order) out.order = t.organism_name;
+	    if (t.rank === "CLASS" && !out.class) out.class = t.organism_name; 
+	}
+	
+    } catch (err) {
+	console.warn("❗ Taxonomy enrichment failed for", taxid, err);
     }
 
-    // species + common names
-    out.species = mainNode.organism_name || null;
-    out.common_name = mainNode.genbank_common_name || mainNode.common_name || null;
-
-    // 2. Fetch lineage details in batch
-    const lineageIds = mainNode.lineage || [];
-
-    const batchResponse = await httpGetJson("https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ tax_ids: lineageIds })
-    });
-
-    const lineageNodes = batchResponse.taxonomy_nodes || [];
-
-    // 3. Extract rank-based entries
-    for (const node of lineageNodes) {
-      const t = node.taxonomy;
-      if (!t) continue;
-
-      if (t.rank === "ORDER" && !out.order) out.order = t.organism_name;
-      if (t.rank === "CLASS" && !out.class) out.class = t.organism_name;
-    }
-
-  } catch (err) {
-    console.warn("❗ Taxonomy enrichment failed for", taxid, err);
-  }
-
-  return out;
+    return out;
 }
 
 // --------------------------------------------------------------
 // BIBTEX GENERATION (Crossref + CSL fallback)
 // --------------------------------------------------------------
 async function fetchBibtex(doi) {
-  // 1. Try Crossref BibTeX
-  try {
-    const url = `https://api.crossref.org/works/${encodeURIComponent(
+    // 1. Try Crossref BibTeX
+    try {
+	const url = `https://api.crossref.org/works/${encodeURIComponent(
       doi
     )}/transform/application/x-bibtex`;
-    const bib = await httpGet(url);
-    if (bib && !bib.startsWith("<")) return bib.trim();
-  } catch {
-    console.warn("Crossref BibTeX failed for", doi);
-  }
+	const bib = await httpGet(url);
+	if (bib && !bib.startsWith("<")) return bib.trim();
+    } catch {
+	console.warn("Crossref BibTeX failed for", doi);
+    }
 
-  // 2. Try CSL JSON fallback
-  try {
-    const csl = await httpGetJson(`https://doi.org/${encodeURIComponent(doi)}`, {
-      Accept: "application/vnd.citationstyles.csl+json"
-    });
-    return cslToBibtex(csl);
-  } catch {
-    console.warn("CSL fallback failed for", doi);
-  }
+    // 2. Try CSL JSON fallback
+    try {
+	const csl = await httpGetJson(`https://doi.org/${encodeURIComponent(doi)}`, {
+	    Accept: "application/vnd.citationstyles.csl+json"
+	});
+	return cslToBibtex(csl);
+    } catch {
+	console.warn("CSL fallback failed for", doi);
+    }
 
-  return "";
+    return "";
 }
 
 function cslToBibtex(csl) {
-  const id = csl.DOI ? csl.DOI.replace(/\W+/g, "_") : "entry";
-  const authors = (csl.author || [])
-    .map((a) => `${a.family || ""}, ${a.given || ""}`.trim())
-    .join(" and ");
-  const year = csl.issued?.["date-parts"]?.[0]?.[0] || "";
-  return `
+    const id = csl.DOI ? csl.DOI.replace(/\W+/g, "_") : "entry";
+    const authors = (csl.author || [])
+	  .map((a) => `${a.family || ""}, ${a.given || ""}`.trim())
+	  .join(" and ");
+    const year = csl.issued?.["date-parts"]?.[0]?.[0] || "";
+    return `
 @article{${id},
   title = {${csl.title || ""}},
   author = {${authors}},
@@ -188,12 +180,12 @@ function cslToBibtex(csl) {
 }
 
 async function buildBibtexMap(data) {
-  const map = {};
-  for (const entry of data) {
-    if (!entry.doi) continue;
-    map[entry.doi] = await fetchBibtex(entry.doi);
-  }
-  return map;
+    const map = {};
+    for (const entry of data) {
+	if (!entry.doi) continue;
+	map[entry.doi] = await fetchBibtex(entry.doi);
+    }
+    return map;
 }
 
 // --------------------------------------------------------------
@@ -207,10 +199,10 @@ const data = readAllData();
 // 2. Enrich with taxonomy
 console.log("🧬 Enriching taxonomy…");
 for (const entry of data) {
-  if (entry.taxid) {
-    const extra = await enrichTaxonomy(entry.taxid);
-    Object.assign(entry, extra);
-  }
+    if (entry.taxid) {
+	const extra = await enrichTaxonomy(entry.taxid);
+	Object.assign(entry, extra);
+    }
 }
 
 // 3. Build BibTeX map
@@ -218,9 +210,9 @@ console.log("📚 Fetching BibTeX…");
 ensureDir(PUBLIC_DIR);
 const bibMap = await buildBibtexMap(data);
 fs.writeFileSync(
-  path.join(PUBLIC_DIR, "bibtex.json"),
-  JSON.stringify(bibMap, null, 2),
-  "utf8"
+    path.join(PUBLIC_DIR, "bibtex.json"),
+    JSON.stringify(bibMap, null, 2),
+    "utf8"
 );
 
 // 4. Prepare dist directory
@@ -230,27 +222,27 @@ ensureDir(path.join(DIST_DIR, "public"));
 // 5. Read template and inject JS data
 let html = fs.readFileSync(path.join(ROOT, "template.html"), "utf8");
 html = html.replace(
-  "<!-- INJECT_DATA -->",
-  `<script>window.__DATA__ = ${JSON.stringify(data, null, 2)};</script>`
+    "<!-- INJECT_DATA -->",
+    `<script>window.__DATA__ = ${JSON.stringify(data, null, 2)};</script>`
 );
 
 fs.writeFileSync(path.join(DIST_DIR, "index.html"), html, "utf8");
 
 // 6. Copy assets
 for (const f of ["style.css", "script.js"]) {
-  if (fs.existsSync(path.join(ROOT, f))) {
-    fs.copyFileSync(path.join(ROOT, f), path.join(DIST_DIR, f));
-  }
+    if (fs.existsSync(path.join(ROOT, f))) {
+	fs.copyFileSync(path.join(ROOT, f), path.join(DIST_DIR, f));
+    }
 }
 
 // 7. Copy public/ folder
 if (fs.existsSync(PUBLIC_DIR)) {
-  for (const f of fs.readdirSync(PUBLIC_DIR)) {
-    fs.copyFileSync(
-      path.join(PUBLIC_DIR, f),
-      path.join(DIST_DIR, "public", f)
-    );
-  }
+    for (const f of fs.readdirSync(PUBLIC_DIR)) {
+	fs.copyFileSync(
+	    path.join(PUBLIC_DIR, f),
+	    path.join(DIST_DIR, "public", f)
+	);
+    }
 }
 
 console.log("✅ Build complete!");
