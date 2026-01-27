@@ -1,6 +1,9 @@
-## Deployment Status
+## Status
 
-[![Deploy to GitHub Pages](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml)
+[![Build & Deploy](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml)
+[![Parse Reviewed Entry](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parse-reviewed.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parse-reviewed.yml)
+[![Live Site](https://img.shields.io/badge/🌐_Live_Site-wildEpiOmics-blue)](https://alicebalard.github.io/wildEpiOmics/)
+
 
 # Biodiversity Study Catalog
 
