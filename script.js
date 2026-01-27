@@ -1,6 +1,5 @@
 // Client-side logic: filter UI + selection + BibTeX download
-const payload = JSON.parse(document.getElementById('entries').textContent);
-let entries = payload.entries || [];
+let entries = window.__DATA__ || [];
 
 const $cards = document.getElementById('cards');
 const $fMethod = document.getElementById('f-method');
