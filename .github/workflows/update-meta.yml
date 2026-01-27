@@ -1,0 +1,36 @@
+name: Update metadata badges
+
+on:
+  push:
+    branches: [ main ]
+  repository_dispatch:
+    types: [trigger-build]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Count studies
+        id: count
+        run: |
+          COUNT=$(ls data/*.yaml 2>/dev/null | wc -l)
+          mkdir -p .meta
+          echo "{\"schemaVersion\": 1, \"label\": \"studies\", \"message\": \"$COUNT\", \"color\": \"informational\"}" > .meta/study_count.json
+
+      - name: Update last deploy time
+        run: |
+          DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
+          echo "{\"schemaVersion\":1,\"label\":\"last deploy\",\"message\":\"$DATE\",\"color\":\"success\"}" > .meta/last_deploy.json
+
+      - name: Commit metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .meta/*.json
+          git commit -m "Update metadata badges" || echo "No changes"
+          git push
