@@ -1,23 +1,33 @@
+/**
+ * Full build.js for wildEpiOmics
+ * - Loads YAML study entries
+ * - Enriches with NCBI taxonomy (species, order, class, common name, image)
+ * - Fetches BibTeX with Crossref + CSL-JSON fallback
+ * - Writes public/bibtex.json
+ * - Injects window.__DATA__ into template.html
+ * - Outputs complete static site into dist/
+ */
+
 import fs from "fs";
 import path from "path";
 import https from "https";
 import { fileURLToPath } from "url";
 import { load as parseYAML } from "js-yaml";
 
-// --------------------
-// Setup paths
-// --------------------
+// --------------------------------------------------------------
+// PATH SETUP
+// --------------------------------------------------------------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, "data");
-const DIST_DIR = path.join(ROOT, "dist");
 const PUBLIC_DIR = path.join(ROOT, "public");
+const DIST_DIR = path.join(ROOT, "dist");
 
-// --------------------
-// Helpers
-// --------------------
+// --------------------------------------------------------------
+// HELPERS
+// --------------------------------------------------------------
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
@@ -25,56 +35,24 @@ function ensureDir(dir) {
 function readAllData() {
   const all = [];
   if (!fs.existsSync(DATA_DIR)) return all;
-  const files = fs.readdirSync(DATA_DIR);
 
-  for (const file of files) {
-    const full = path.join(DATA_DIR, file);
+  for (const file of fs.readdirSync(DATA_DIR)) {
     const ext = path.extname(file).toLowerCase();
-    if (![".yml", ".yaml", ".json"].includes(ext)) continue;
+    if (![".yaml", ".yml", ".json"].includes(ext)) continue;
 
     try {
-      const raw = fs.readFileSync(full, "utf8");
-      const parsed = ext === ".json" ? JSON.parse(raw) : parseYAML(raw);
+      const content = fs.readFileSync(path.join(DATA_DIR, file), "utf8");
+      const parsed = ext === ".json" ? JSON.parse(content) : parseYAML(content);
       all.push(parsed);
     } catch (err) {
       console.error("❌ Failed parsing", file, err);
     }
   }
-
   return all;
 }
 
-// --------------------
-// BibTeX helpers
-// --------------------
-async function fetchBibtex(doi) {
-  // 1. Try Crossref BibTeX
-  const crossrefUrl = `https://api.crossref.org/works/${encodeURIComponent(doi)}/transform/application/x-bibtex`;
-
-  try {
-    const bib = await httpGetSimple(crossrefUrl);
-    if (bib && !bib.startsWith("<")) return bib.trim();
-  } catch (err) {
-    console.warn("Crossref BibTeX failed for", doi);
-  }
-
-  // 2. Try generic DOI → CSL JSON
-  try {
-    const csl = await httpGetJson(
-      `https://doi.org/${encodeURIComponent(doi)}`,
-      { Accept: "application/vnd.citationstyles.csl+json" }
-    );
-    if (csl) return cslToBibtex(csl);
-  } catch (err) {
-    console.warn("CSL JSON fallback failed for", doi);
-  }
-
-  console.warn("⚠️ Could not generate BibTeX for", doi);
-  return "";
-}
-
-// Basic GET for text responses
-function httpGetSimple(url, headers = {}) {
+// Simple GET returning text
+function httpGet(url, headers = {}) {
   return new Promise((resolve, reject) => {
     https.get(url, { headers }, (res) => {
       let data = "";
@@ -84,32 +62,91 @@ function httpGetSimple(url, headers = {}) {
   });
 }
 
-// GET + parse JSON
-function httpGetJson(url, headers = {}) {
-  return new Promise((resolve, reject) => {
-    https.get(url, { headers }, (res) => {
-      let data = "";
-      res.on("data", (chunk) => (data += chunk));
-      res.on("end", () => {
-        try {
-          resolve(JSON.parse(data));
-        } catch (err) {
-          reject(err);
-        }
-      });
-    }).on("error", reject);
-  });
+// GET expecting JSON
+async function httpGetJson(url, headers = {}) {
+  const txt = await httpGet(url, headers);
+  return JSON.parse(txt);
 }
 
-// 3. Convert CSL JSON → BibTeX
+// --------------------------------------------------------------
+// NCBI TAXONOMY ENRICHMENT
+// --------------------------------------------------------------
+async function enrichTaxonomy(taxid) {
+  const out = {
+    species: null,
+    order: null,
+    class: null,
+    common_name: null,
+    image: null
+  };
+
+  // ---- 1. Main NCBI taxonomy data
+  try {
+    const url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=${taxid}&retmode=json`;
+    const json = await httpGetJson(url);
+    const t = json.Taxon;
+
+    out.species = t.ScientificName || null;
+    out.common_name = t.CommonName || null;
+
+    if (Array.isArray(t.LineageEx)) {
+      for (const lvl of t.LineageEx) {
+        if (lvl.Rank === "order") out.order = lvl.ScientificName;
+        if (lvl.Rank === "class") out.class = lvl.ScientificName;
+      }
+    }
+  } catch (err) {
+    console.warn("Taxonomy fetch failed for", taxid);
+  }
+
+  // ---- 2. NCBI picture
+  try {
+    const url = `https://api.ncbi.nlm.nih.gov/datasets/v1/taxonomy/taxon/${taxid}`;
+    const json = await httpGetJson(url);
+    if (json.taxon?.images?.length) {
+      out.image = json.taxon.images[0].url;
+    }
+  } catch (err) {
+    console.warn("No image for taxid", taxid);
+  }
+
+  return out;
+}
+
+// --------------------------------------------------------------
+// BIBTEX GENERATION (Crossref + CSL fallback)
+// --------------------------------------------------------------
+async function fetchBibtex(doi) {
+  // 1. Try Crossref BibTeX
+  try {
+    const url = `https://api.crossref.org/works/${encodeURIComponent(
+      doi
+    )}/transform/application/x-bibtex`;
+    const bib = await httpGet(url);
+    if (bib && !bib.startsWith("<")) return bib.trim();
+  } catch {
+    console.warn("Crossref BibTeX failed for", doi);
+  }
+
+  // 2. Try CSL JSON fallback
+  try {
+    const csl = await httpGetJson(`https://doi.org/${encodeURIComponent(doi)}`, {
+      Accept: "application/vnd.citationstyles.csl+json"
+    });
+    return cslToBibtex(csl);
+  } catch {
+    console.warn("CSL fallback failed for", doi);
+  }
+
+  return "";
+}
+
 function cslToBibtex(csl) {
-  const id = csl.DOI ? csl.DOI.replace(/\//g, "_") : "entry";
+  const id = csl.DOI ? csl.DOI.replace(/\W+/g, "_") : "entry";
   const authors = (csl.author || [])
-    .map(a => `${a.family || ""}, ${a.given || ""}`.trim())
+    .map((a) => `${a.family || ""}, ${a.given || ""}`.trim())
     .join(" and ");
-
   const year = csl.issued?.["date-parts"]?.[0]?.[0] || "";
-
   return `
 @article{${id},
   title = {${csl.title || ""}},
@@ -120,8 +157,7 @@ function cslToBibtex(csl) {
   number = {${csl.issue || ""}},
   pages = {${csl.page || ""}},
   doi = {${csl.DOI || ""}}
-}
-`.trim();
+}`.trim();
 }
 
 async function buildBibtexMap(data) {
@@ -133,49 +169,54 @@ async function buildBibtexMap(data) {
   return map;
 }
 
-// --------------------
-// Build
-// --------------------
+// --------------------------------------------------------------
+// BUILD PROCESS
+// --------------------------------------------------------------
 console.log("🔨 Building site...");
 
-// Read YAML
+// 1. Load YAML entries
 const data = readAllData();
 
-// Build BibTeX
+// 2. Enrich with taxonomy
+console.log("🧬 Enriching taxonomy…");
+for (const entry of data) {
+  if (entry.taxid) {
+    const extra = await enrichTaxonomy(entry.taxid);
+    Object.assign(entry, extra);
+  }
+}
+
+// 3. Build BibTeX map
 console.log("📚 Fetching BibTeX…");
-const bibMap = await buildBibtexMap(data);
-
-// Ensure output dirs
-ensureDir(DIST_DIR);
 ensureDir(PUBLIC_DIR);
-ensureDir(path.join(DIST_DIR, "public"));
-
-// Write bibtex.json in public/
+const bibMap = await buildBibtexMap(data);
 fs.writeFileSync(
   path.join(PUBLIC_DIR, "bibtex.json"),
   JSON.stringify(bibMap, null, 2),
   "utf8"
 );
 
-// Load HTML template
-const template = fs.readFileSync(path.join(ROOT, "template.html"), "utf8");
+// 4. Prepare dist directory
+ensureDir(DIST_DIR);
+ensureDir(path.join(DIST_DIR, "public"));
 
-// Inject DATA
-const injected = template.replace(
+// 5. Read template and inject JS data
+let html = fs.readFileSync(path.join(ROOT, "template.html"), "utf8");
+html = html.replace(
   "<!-- INJECT_DATA -->",
   `<script>window.__DATA__ = ${JSON.stringify(data, null, 2)};</script>`
 );
 
-// Write dist/index.html
-fs.writeFileSync(path.join(DIST_DIR, "index.html"), injected);
+fs.writeFileSync(path.join(DIST_DIR, "index.html"), html, "utf8");
 
-// Copy assets
-for (const asset of ["script.js", "style.css"]) {
-  const src = path.join(ROOT, asset);
-  if (fs.existsSync(src)) fs.copyFileSync(src, path.join(DIST_DIR, asset));
+// 6. Copy assets
+for (const f of ["style.css", "script.js"]) {
+  if (fs.existsSync(path.join(ROOT, f))) {
+    fs.copyFileSync(path.join(ROOT, f), path.join(DIST_DIR, f));
+  }
 }
 
-// Copy public/*
+// 7. Copy public/ folder
 if (fs.existsSync(PUBLIC_DIR)) {
   for (const f of fs.readdirSync(PUBLIC_DIR)) {
     fs.copyFileSync(
@@ -185,6 +226,6 @@ if (fs.existsSync(PUBLIC_DIR)) {
   }
 }
 
-console.log("✅ Build finished");
-console.log("📊 Data entries:", data.length);
-console.log("📚 BibTeX entries:", Object.keys(bibMap).length);
+console.log("✅ Build complete!");
+console.log(`📊 Entries: ${data.length}`);
+console.log(`📚 BibTeX entries: ${Object.keys(bibMap).length}`);
