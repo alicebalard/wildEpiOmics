@@ -48,33 +48,87 @@ function readAllData() {
 // BibTeX helpers
 // --------------------
 async function fetchBibtex(doi) {
-  const url = `https://api.crossref.org/works/${encodeURIComponent(doi)}/transform/application/x-bibtex`;
+  // 1. Try Crossref BibTeX
+  const crossrefUrl = `https://api.crossref.org/works/${encodeURIComponent(doi)}/transform/application/x-bibtex`;
+
+  try {
+    const bib = await httpGetSimple(crossrefUrl);
+    if (bib && !bib.startsWith("<")) return bib.trim();
+  } catch (err) {
+    console.warn("Crossref BibTeX failed for", doi);
+  }
+
+  // 2. Try generic DOI → CSL JSON
+  try {
+    const csl = await httpGetJson(
+      `https://doi.org/${encodeURIComponent(doi)}`,
+      { Accept: "application/vnd.citationstyles.csl+json" }
+    );
+    if (csl) return cslToBibtex(csl);
+  } catch (err) {
+    console.warn("CSL JSON fallback failed for", doi);
+  }
+
+  console.warn("⚠️ Could not generate BibTeX for", doi);
+  return "";
+}
+
+// Basic GET for text responses
+function httpGetSimple(url, headers = {}) {
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
+    https.get(url, { headers }, (res) => {
       let data = "";
-      res.on("data", chunk => (data += chunk));
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => resolve(data));
+    }).on("error", reject);
+  });
+}
+
+// GET + parse JSON
+function httpGetJson(url, headers = {}) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers }, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
-        // Some providers return empty or HTML if the DOI does not support BibTeX
-        if (data.startsWith("<")) {
-          console.warn("⚠️ Crossref returned HTML for", doi);
-          resolve(""); // avoid breaking the map
-        } else {
-          resolve(data.trim());
+        try {
+          resolve(JSON.parse(data));
+        } catch (err) {
+          reject(err);
         }
       });
     }).on("error", reject);
   });
 }
 
+// 3. Convert CSL JSON → BibTeX
+function cslToBibtex(csl) {
+  const id = csl.DOI ? csl.DOI.replace(/\//g, "_") : "entry";
+  const authors = (csl.author || [])
+    .map(a => `${a.family || ""}, ${a.given || ""}`.trim())
+    .join(" and ");
+
+  const year = csl.issued?.["date-parts"]?.[0]?.[0] || "";
+
+  return `
+@article{${id},
+  title = {${csl.title || ""}},
+  author = {${authors}},
+  journal = {${csl["container-title"] || ""}},
+  year = {${year}},
+  volume = {${csl.volume || ""}},
+  number = {${csl.issue || ""}},
+  pages = {${csl.page || ""}},
+  doi = {${csl.DOI || ""}}
+}
+`.trim();
+}
+
 async function buildBibtexMap(data) {
   const map = {};
   for (const entry of data) {
     if (!entry.doi) continue;
-    try {
-      map[entry.doi] = await fetchBibtex(entry.doi);
-    } catch {
-      console.warn("⚠️ Could not fetch BibTeX for", entry.doi);
-    }
+    map[entry.doi] = await fetchBibtex(entry.doi);
   }
   return map;
 }
