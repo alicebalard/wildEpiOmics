@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: write
       issues: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,6 +25,7 @@ jobs:
             const issue = context.payload.issue;
             const body = issue.body || '';
             const m = body.match(/```yaml\n([\s\S]*?)\n```/);
+
             if (!m) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -33,14 +35,17 @@ jobs:
               });
               return;
             }
+
             const yaml = m[1];
 
             const tax = (yaml.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
             const doi = (yaml.match(/doi:\s*([^\n\r\s]+)/i) || [])[1] || 'no-doi';
             const year = (yaml.match(/\b(19|20)\d{2}\b/) || [])[0] || 'y';
+
             const base = `data/${tax}_${year}`.replace(/[^a-zA-Z0-9_\-\/]/g,'');
             let filename = `${base}.yaml`;
             if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
+
             fs.writeFileSync(filename, yaml);
 
             await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
@@ -55,4 +60,16 @@ jobs:
               issue_number: issue.number,
               body: `Saved as \`${filename}\``
             });
-            await github.rest.issues.update({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number, state: 'closed' });
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              state: 'closed'
+            });
+
+      - name: Trigger deployment workflow
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: trigger-build

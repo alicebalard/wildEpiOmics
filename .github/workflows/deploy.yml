@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main ]
 
+  # Triggered when parse-reviewed.yml sends repository_dispatch
+  repository_dispatch:
+    types: [trigger-build]
+
 permissions:
   contents: read
   pages: write
@@ -32,11 +36,9 @@ jobs:
 
       - name: Install
         run: npm ci
-        working-directory: .
 
       - name: Build
         run: npm run build
-        working-directory: .
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
