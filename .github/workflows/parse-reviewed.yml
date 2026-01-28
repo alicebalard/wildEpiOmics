@@ -11,124 +11,65 @@ jobs:
     permissions:
       contents: write
       issues: write
-      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0  # Get full history
-
-      - name: Install js-yaml
-        run: npm install js-yaml
 
       - name: Parse issue → data/*.yaml
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const yaml = require('js-yaml');
-                      
+            const path = require('path');
+
             const issue = context.payload.issue;
-            const issueNumber = issue.number;
-            
-            // Get issue body
-            const { data: issueData } = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber
-            });
-            const body = issueData.body || '';
+            const body = issue.body || '';
+            const m = body.match(/```yaml\n([\s\S]*?)\n```/);
 
-            console.log('Processing issue:', issueNumber);
-
-            // FIXED REGEXES for your issue format
-            const doiMatch = body.match(/###\s*DOI\s*\n\s*([^\n]+)/i);
-            const taxMatch = body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i);
-            const tissueMatch = body.match(/###\s*tissue\s*\n\s*([^\n]+)/i);
-            const methodMatch = body.match(/###\s*method\s*\n\s*([^\n]+)/i);
-            const individualsMatch = body.match(/###\s*number of sequenced individuals\s*\n\s*(\d+)/i);
-            const notesMatch = body.match(/###\s*Notes\s*\n([\s\S]*?)(?=###|$)/i);
-
-            const taxid = taxMatch ? taxMatch[1] : null;
-            const entryYear = (body.match(/\b(19|20)\d{2}\b/) || ['2024'])[0];
-            const doi = doiMatch ? doiMatch[1].trim() : 'no-doi';
-            const tissue = tissueMatch ? tissueMatch[1].trim() : '';
-            const method = methodMatch ? methodMatch[1].trim() : '';
-            const individuals = individualsMatch ? individualsMatch[1] : '';
-            const notes = notesMatch ? notesMatch[1].trim() : '';
-
-            if (!taxid) {
+            if (!m) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: issueNumber,
-                body: '❌ Missing NCBI Taxon ID. Please include `### NCBI Taxon ID\n12345`'
+                issue_number: issue.number,
+                body: 'No ```yaml code block found.'
               });
               return;
             }
 
-            const taxonInfo = {
-              '69293': { order: 'Gasterosteiformes', class: 'Actinopterygii' }
-            };
+            const yaml = m[1];
 
-            const studyData = {
-              taxid,
-              doi,
-              year: entryYear,
-              method,
-              tissue,
-              individuals: parseInt(individuals) || 0,
-              title: notes.split('\n')[0] || 'Untitled study',
-              authors: 'Unknown authors',
-              url: doi.startsWith('10.') ? `https://doi.org/${doi}` : doi,
-              order: taxonInfo[taxid]?.order || 'Unknown',
-              class: taxonInfo[taxid]?.class || 'Unknown'
-            };
-            
-            const yamlText = yaml.dump(studyData, { indent: 2 });
+            const tax = (yaml.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
+            const doi = (yaml.match(/doi:\s*([^\n\r\s]+)/i) || [])[1] || 'no-doi';
+            const year = (yaml.match(/\b(19|20)\d{2}\b/) || [])[0] || 'y';
 
-            // Generate safe filename
-            const fileYear = entryYear.slice(-2);
-            const base = `data/${taxid}_${fileYear}`;
+            const base = `data/${tax}_${year}`.replace(/[^a-zA-Z0-9_\-\/]/g,'');
             let filename = `${base}.yaml`;
-            if (fs.existsSync(filename)) filename = `${base}_${issueNumber}.yaml`;
+            if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
 
-            console.log('Writing:', filename);
-            fs.writeFileSync(filename, yamlText);
+            fs.writeFileSync(filename, yaml);
 
-            // COMPLETE Git workflow
-            await exec.getExecOutput('git', ['config', 'user.name', 'github-actions[bot]']);
-            await exec.getExecOutput('git', ['config', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
-            await exec.getExecOutput('git', ['add', '.']);
-            
-            const commitResult = await exec.getExecOutput('git', ['commit', '-m', `Add study #${issueNumber}: ${taxid}`]);
-            console.log('Commit exit code:', commitResult.exitCode);
-            
-            if (commitResult.exitCode === 0) {
-              const pushResult = await exec.getExecOutput('git', ['push', 'origin', 'HEAD:main']);
-              console.log('Push exit code:', pushResult.exitCode);
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                body: `✅ **Added!** \`${filename}\` → [View file](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${filename})\n\nSite will rebuild shortly.`
-              });
-            } else {
-              console.log('No changes to commit');
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                body: `ℹ️ No new data to add (file exists)`
-              });
-            }
+            await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
+            await exec.exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
+            await exec.exec('git', ['add', filename]);
+            await exec.exec('git', ['commit', '-m', `Add entry from Issue #${issue.number}`]);
+            await exec.exec('git', ['push']);
 
-            // Close issue
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `Saved as \`${filename}\``
+            });
+
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: issueNumber,
+              issue_number: issue.number,
               state: 'closed'
             });
+
+      - name: Trigger deployment workflow
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: trigger-build
