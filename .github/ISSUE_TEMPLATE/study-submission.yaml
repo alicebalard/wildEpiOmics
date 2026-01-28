@@ -14,6 +14,7 @@ body:
       label: DOI
       description: e.g. `10.1038/s41586-024-12345-6`
       placeholder: "10.1038/..."
+    validations:
       required: true
 
   - type: input
@@ -22,6 +23,7 @@ body:
       label: NCBI Taxon ID
       description: e.g. `9606` for human, `10090` for mouse
       placeholder: "9606"
+    validations:
       required: true
 
   - type: textarea
@@ -29,6 +31,7 @@ body:
     attributes:
       label: Study title
       placeholder: "Full title of the paper"
+    validations:
       required: true
 
   - type: textarea
@@ -36,6 +39,7 @@ body:
     attributes:
       label: Authors
       placeholder: "Author1 Lastname1, Author2 Lastname2, ..."
+    validations:
       required: true
 
   - type: dropdown
@@ -48,6 +52,7 @@ body:
         - "2024"
         - "2023"
         - "Other"
+    validations:
       required: true
 
   - type: textarea
