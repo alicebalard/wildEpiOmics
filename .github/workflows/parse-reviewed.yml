@@ -23,25 +23,21 @@ jobs:
             const issue = context.payload.issue;
             const body = issue.body || '';
             
-            // Parse YAML block OR form fields
+            // Parse YAML block OR form fields → YOUR EXACT FORMAT
             let yamlContent;
             const yamlMatch = body.match(/```ya?ml\s*\n([\s\S]*?)\n```/i);
             if (yamlMatch) {
               yamlContent = yamlMatch[1];
             } else {
-              // EXTRACT ALL FIELDS - PERFECT FORMAT
+              // EXTRACT ALL FIELDS from ### form format
               const doi = (body.match(/###\s*DOI\s*\n\s*([^\n]+)/i) || [])[1]?.trim() || '';
               const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1];
               const individuals = (body.match(/###\s*(?:individuals|number of sequenced individuals)\s*\n\s*(\d+)/i) || [])[1];
-              
-              // FIXED data_url extraction
-              const dataUrlMatch = body.match(/###\s*(?:URL|data_url|raw data)\s*\n\s*\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/i);
-              const dataUrlText = dataUrlMatch ? dataUrlMatch[1] : '';
-              const dataUrl = dataUrlMatch ? dataUrlMatch[2] : '';
-              
+              const dataUrl = (body.match(/###\s*(?:URL|data_url)\s*\n\s*\[([^\]]+)\]\(([^\)]+)\)/i) || [])[2];
               const method = (body.match(/###\s*method\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
               const notesMatch = body.match(/###\s*Notes?\s*\n([\s\S]*?)(?=###|$)/i);
               const notes = notesMatch ? notesMatch[1].trim() : '';
+              const yearMatch = body.match(/\b(20\d{2})\b/) || ['2024'];
               
               if (!taxid || !doi) {
                 await github.rest.issues.createComment({
@@ -53,22 +49,20 @@ jobs:
                 return;
               }
               
-              // Build EXACT YAML format - NO YEAR FIELD
               yamlContent = `doi: ${doi}\ntaxid: ${taxid}`;
               if (individuals) yamlContent += `\nindividuals: ${individuals}`;
-              if (dataUrl) yamlContent += `\ndata_url: [${dataUrlText || 'Data'}](${dataUrl})`;
+              if (dataUrl) yamlContent += `\ndata_url: [${dataUrl}](${dataUrl})`;
               if (method) yamlContent += `\nmethod: ${method}`;
+              yamlContent += `\nyear: ${yearMatch[0]}`;
               if (notes) yamlContent += `\nnotes: |\n  ${notes.replace(/\n/g, '\n  ')}`;
             }
             
-            // Filename uses taxid only (no year)
+            // Generate filename from taxid/year
             const tax = (yamlContent.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
-            const base = `data/${tax}`;
+            const year = (yamlContent.match(/year:\s*(\d{4})/i) || [])[1] || '24';
+            const base = `data/${tax}_${year.slice(-2)}`;
             let filename = `${base}.yaml`;
-            if (fs.existsSync(filename)) {
-              const issueNum = issue.number;
-              filename = `${base}_${issueNum}.yaml`;
-            }
+            if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
 
             fs.writeFileSync(filename, yamlContent);
 
