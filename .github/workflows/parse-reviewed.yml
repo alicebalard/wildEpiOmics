@@ -97,28 +97,27 @@ jobs:
             // Commit if there are changes
 
             console.log('🔍 DEBUG: About to commit...');
-            const commitResult = await exec.exec('git', ['commit', '-m', `Add study from Issue #${issueNumber}`], { ignoreReturnCode: true });
+
+            // ✅ ALWAYS capture exit code
+            const commitResult = await exec.exec('git', ['commit', '-m', `Add study from Issue #${issueNumber}`], { 
+              ignoreReturnCode: true,  // CRITICAL: Capture success/failure
+              silent: false            // See output
+            });
+            
             console.log('🔍 DEBUG: Commit exit code:', commitResult.exitCode);
+            console.log('🔍 DEBUG: Commit stdout:', commitResult.stdout);
             
             if (commitResult.exitCode === 0) {
               console.log('🚀 DEBUG: COMMIT SUCCESS - NOW PUSHING...');
               
-              // Show git status BEFORE push
-              const status = await exec.exec('git', ['status'], { silent: false });
-              console.log('🔍 DEBUG: Git status before push:\n', status.stdout);
-              
-              // TRY PUSH with FULL DEBUG
               const pushResult = await exec.exec('git', ['push', 'origin', 'main'], { 
-                silent: false,           // SHOW ALL OUTPUT
-                ignoreReturnCode: true   // DON'T CRASH
+                ignoreReturnCode: true,
+                silent: false
               });
               
               console.log('🚀 DEBUG: Push exit code:', pushResult.exitCode);
-              console.log('🚀 DEBUG: Push stdout:', pushResult.stdout);
-              console.log('🚀 DEBUG: Push stderr:', pushResult.stderr);
               
               if (pushResult.exitCode === 0) {
-                console.log('✅ DEBUG: PUSH SUCCESS!');
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -126,18 +125,24 @@ jobs:
                   body: `✅ **Added!** \`${filename}\` → [View](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${filename})`
                 });
               } else {
-                console.log('❌ DEBUG: PUSH FAILED');
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issueNumber,
-                  body: `❌ **Push failed!**\nExit: ${pushResult.exitCode}\n\`\`\`\n${pushResult.stderr}\n\`\`\``
+                  body: `❌ **Push failed!** Exit: ${pushResult.exitCode}\n\`\`\`\n${pushResult.stderr}\n\`\`\``
                 });
               }
             } else {
-              console.log('ℹ️ DEBUG: No commit needed');
+              console.log('ℹ️ DEBUG: No changes to commit');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `ℹ️ No changes to commit`
+              });
             }
-                        // Close issue
+            
+            // Close issue
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
