@@ -33,13 +33,13 @@ jobs:
               const doi = (body.match(/###\s*DOI\s*\n\s*([^\n]+)/i) || [])[1]?.trim() || '';
               const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1];
               const individuals = (body.match(/###\s*(?:individuals|number of sequenced individuals)\s*\n\s*(\d+)/i) || [])[1];
-              const dataUrlMatch = body.match(/###\s*(?:URL|data_url|raw data)\s*\n\s*\[([^\]]+?)\]\s*\((https?:\/\/[^\s)]+)\)/i);
-              const dataUrlText = dataUrlMatch ? dataUrlMatch[1] : 'Data';
-              const dataUrl = dataUrlMatch ? dataUrlMatch[2] : '';
+	      const dataUrlMatch = body.match(/###\s*URL of raw data\s*\n\s*\[([^\]]*)\]\s*\((https?:\/\/[^\s)]+)\)/i);
+	      const dataUrlText = dataUrlMatch ? dataUrlMatch[1] : 'Data';
+	      const dataUrl = dataUrlMatch ? dataUrlMatch[2] : '';
               const method = (body.match(/###\s*method\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
-              const notesMatch = body.match(/###\s*Notes?\s*\n([\s\S]*?)(?=###|$)/i);
-              const notes = notesMatch ? notesMatch[1].trim() : '';
-              const yearMatch = body.match(/\b(20\d{2})\b/) || ['2024'];
+	      const notesMatch = body.match(/###\s*Notes?\s*\(optional\)\s*\n([\s\S]*)$/i);
+	      const notes = notesMatch ? notesMatch[1].trim() : '';
+	      const yearMatch = body.match(/\b(20\d{2})\b/) || ['2024'];
               
               if (!taxid || !doi) {
                 await github.rest.issues.createComment({
