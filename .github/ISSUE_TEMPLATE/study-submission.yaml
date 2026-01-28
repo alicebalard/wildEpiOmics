@@ -27,39 +27,10 @@ body:
       required: true
 
   - type: textarea
-    id: title
-    attributes:
-      label: Study title
-      placeholder: "Full title of the paper"
-    validations:
-      required: true
-
-  - type: textarea
-    id: authors
-    attributes:
-      label: Authors
-      placeholder: "Author1 Lastname1, Author2 Lastname2, ..."
-    validations:
-      required: true
-
-  - type: dropdown
-    id: year
-    attributes:
-      label: Publication year
-      options:
-        - "2026"
-        - "2025"
-        - "2024"
-        - "2023"
-        - "Other"
-    validations:
-      required: true
-
-  - type: textarea
     id: abstract
     attributes:
-      label: Abstract/Description (optional)
-      placeholder: "Brief summary..."
+      label: Notes (optional)
+      placeholder: "..."
 
   - type: markdown
     attributes:
