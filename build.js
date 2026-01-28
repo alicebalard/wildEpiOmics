@@ -391,6 +391,35 @@ console.log("🔨 Building site...");
 // 1. Load YAML entries
 const data = readAllData();
 
+// Load/save taxonomy cache
+const TAX_CACHE = path.join(ROOT, 'cache', 'taxonomy.json');
+ensureDir(path.dirname(TAX_CACHE));
+
+let cache = {};
+if (fs.existsSync(TAX_CACHE)) {
+    cache = JSON.parse(fs.readFileSync(TAX_CACHE, 'utf8'));
+}
+
+async function getCachedTaxonomy(taxid) {
+    if (cache[taxid]) {
+        console.log(`📦 Cache hit: ${taxid}`);
+        return cache[taxid];
+    }
+    
+    const result = await enrichTaxonomy(taxid);
+    cache[taxid] = result;
+    fs.writeFileSync(TAX_CACHE, JSON.stringify(cache, null, 2));
+    return result;
+}
+
+// Then use it:
+for (const entry of data) {
+    if (entry.taxid) {
+        const extra = await getCachedTaxonomy(entry.taxid);  // Uses cache!
+        Object.assign(entry, extra);
+    }
+}
+
 // 2. Enrich with taxonomy
 console.log("🧬 Enriching taxonomy…");
 for (const entry of data) {
