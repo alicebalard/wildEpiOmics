@@ -45,23 +45,45 @@ jobs:
               yamlText = yamlMatch[1];
               console.log('Found YAML block');
             } else {
-              // Parse form fields
-              console.log('Parsing form fields');
-              const doiMatch = body.match(/doi[:\s]*`?([^\s\n`]+)/i) || 
-                              body.match(/input name="doi" value="([^"]+)"/i);
-              const taxMatch = body.match(/taxid[:\s]*`?(\d+)/i) || 
-                              body.match(/input name="taxid" value="(\d+)"/i);
-              const titleMatch = body.match(/title[:\s]*([^\n]+)/i);
-              const yearMatch = body.match(/\b(19|20)\d{2}\b/) || 
-                               body.match(/year[:\s]*`?(\d{4})/i);
-              const authorsMatch = body.match(/authors[:\s]*([^\n]+)/i);
 
-              const taxid = taxMatch ? taxMatch[1] : 'entry';
-              const year = yearMatch ? yearMatch[1] : '2024';
-              const doi = doiMatch ? doiMatch[1] : 'no-doi';
+            // Parse form fields - EXTRACT ALL website fields
+            console.log('Parsing form fields');
+            const doiMatch = body.match(/doi[:\s]*`?([^`\n]+)/i) || body.match(/input name="doi" value="([^"]+)"/i);
+            const taxMatch = body.match(/taxid[:\s]*`?(\d+)/i) || body.match(/input name="taxid" value="(\d+)"/i);
+            const tissueMatch = body.match(/tissue[:\s]*`?([^`\n]+)/i);
+            const methodMatch = body.match(/method[:\s]*`?([^`\n]+)/i);
+            const individualsMatch = body.match(/number of sequenced individuals[:\s]*`?(\d+)/i);
+            const notesMatch = body.match(/notes[:\s]*```([\s\S]*?)```|notes[:\s]*`?([^`\n]+)/i);
+            
+            const taxid = taxMatch ? taxMatch[1] : 'unknown';
+            const year = (body.match(/\b(19|20)\d{2}\b/) || ['2024'])[0];
+            const doi = doiMatch ? doiMatch[1] : 'no-doi';
+            const tissue = tissueMatch ? tissueMatch[1].trim() : '';
+            const method = methodMatch ? methodMatch[1].trim() : '';
+            const individuals = individualsMatch ? individualsMatch[1] : '';
+            const notes = notesMatch ? (notesMatch[1] || notesMatch[2] || '').trim() : '';
 
-              yamlText = `taxid: ${taxid}\ndoi: ${doi}\nyear: ${year}\ntitle: "${titleMatch ? titleMatch[1].trim() : 'Untitled'}"\nauthors: "${authorsMatch ? authorsMatch[1].trim() : 'Unknown'}"`;
-            }
+            // TAXON INFO (hardcoded mapping or fetch from NCBI API later)
+            const taxonInfo = {
+              '69293': { order: 'Gasterosteiformes', class: 'Actinopterygii', species: 'Gasterosteus aculeatus' }
+            };
+
+            // Build COMPLETE YAML for website
+            const studyData = {
+              taxid,
+              doi,
+              year,
+              method,
+              tissue,
+              individuals: parseInt(individuals) || 0,
+              title: notes.split('\n')[0] || 'Untitled study',
+              authors: 'Unknown authors',
+              url: doi.startsWith('10.') ? `https://doi.org/${doi}` : doi,
+              order: taxonInfo[taxid]?.order || 'Unknown',
+              class: taxonInfo[taxid]?.class || 'Unknown'
+            };
+            
+            const yamlText = yaml.dump(studyData, { indent: 2 });
 
             if (!yamlText) {
               await github.rest.issues.createComment({
