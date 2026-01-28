@@ -91,7 +91,7 @@ jobs:
             await exec.exec('git', ['pull', 'origin', 'main']);
             
             await exec.exec('git', ['config', 'user.name', 'github-actions[bot]']);
-            await exec.exec('git', ['config', 'user.email', 'github-actions[bot]@users.noretry.github.com']);
+            await exec.exec('git', ['config', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
             await exec.exec('git', ['add', filename]);
 
             // Commit if there are changes
