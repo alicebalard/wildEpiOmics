@@ -53,8 +53,7 @@ jobs:
               if (individuals) yamlContent += `\nindividuals: ${individuals}`;
               if (dataUrl) yamlContent += `\ndata_url: [${dataUrl}](${dataUrl})`;
               if (method) yamlContent += `\nmethod: ${method}`;
-	      if (dataUrl) yamlContent += `\ndataUrl: ${dataUrl}`;
-              //yamlContent += `\nyear: ${yearMatch[0]}`;
+              if (dataUrl) yamlContent += `\ndataUrl: ${dataUrl}`;
               if (notes) yamlContent += `\nnotes: |\n  ${notes.replace(/\n/g, '\n  ')}`;
             }
             
