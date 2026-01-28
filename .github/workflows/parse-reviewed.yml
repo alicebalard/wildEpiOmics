@@ -33,7 +33,9 @@ jobs:
               const doi = (body.match(/###\s*DOI\s*\n\s*([^\n]+)/i) || [])[1]?.trim() || '';
               const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1];
               const individuals = (body.match(/###\s*(?:individuals|number of sequenced individuals)\s*\n\s*(\d+)/i) || [])[1];
-              const dataUrl = (body.match(/###\s*(?:URL|data_url)\s*\n\s*\[([^\]]+)\]\(([^\)]+)\)/i) || [])[2];
+              const dataUrlMatch = body.match(/###\s*(?:URL|data_url|raw data)\s*\n\s*\[([^\]]+?)\]\s*\((https?:\/\/[^\s)]+)\)/i);
+              const dataUrlText = dataUrlMatch ? dataUrlMatch[1] : 'Data';
+              const dataUrl = dataUrlMatch ? dataUrlMatch[2] : '';
               const method = (body.match(/###\s*method\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
               const notesMatch = body.match(/###\s*Notes?\s*\n([\s\S]*?)(?=###|$)/i);
               const notes = notesMatch ? notesMatch[1].trim() : '';
@@ -53,7 +55,6 @@ jobs:
               if (individuals) yamlContent += `\nindividuals: ${individuals}`;
               if (dataUrl) yamlContent += `\ndata_url: [${dataUrl}](${dataUrl})`;
               if (method) yamlContent += `\nmethod: ${method}`;
-              if (dataUrl) yamlContent += `\ndataUrl: ${dataUrl}`;
               if (notes) yamlContent += `\nnotes: |\n  ${notes.replace(/\n/g, '\n  ')}`;
             }
             
