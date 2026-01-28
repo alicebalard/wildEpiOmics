@@ -98,11 +98,8 @@ jobs:
 
             console.log('🔍 DEBUG: About to commit...');
 
-            // ✅ ALWAYS capture exit code
-            const commitResult = await exec.exec('git', ['commit', '-m', `Add study from Issue #${issueNumber}`], { 
-              ignoreReturnCode: true,  // CRITICAL: Capture success/failure
-              silent: false            // See output
-            });
+            // ✅ CORRECT: Always returns {exitCode, stdout, stderr}
+            const commitResult = await exec.getExecOutput('git', ['commit', '-m', `Add study from Issue #${issueNumber}`]);
             
             console.log('🔍 DEBUG: Commit exit code:', commitResult.exitCode);
             console.log('🔍 DEBUG: Commit stdout:', commitResult.stdout);
@@ -110,12 +107,9 @@ jobs:
             if (commitResult.exitCode === 0) {
               console.log('🚀 DEBUG: COMMIT SUCCESS - NOW PUSHING...');
               
-              const pushResult = await exec.exec('git', ['push', 'origin', 'main'], { 
-                ignoreReturnCode: true,
-                silent: false
-              });
-              
+              const pushResult = await exec.getExecOutput('git', ['push', 'origin', 'main']);
               console.log('🚀 DEBUG: Push exit code:', pushResult.exitCode);
+              console.log('🚀 DEBUG: Push stdout:', pushResult.stdout);
               
               if (pushResult.exitCode === 0) {
                 await github.rest.issues.createComment({
@@ -129,7 +123,7 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issueNumber,
-                  body: `❌ **Push failed!** Exit: ${pushResult.exitCode}\n\`\`\`\n${pushResult.stderr}\n\`\`\``
+                  body: `❌ **Push failed!**\n\`\`\`\n${pushResult.stderr}\n\`\`\``
                 });
               }
             } else {
@@ -138,7 +132,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
-                body: `ℹ️ No changes to commit`
+                body: `ℹ️ No changes needed (exit code: ${commitResult.exitCode})`
               });
             }
             
