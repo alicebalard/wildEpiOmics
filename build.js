@@ -88,101 +88,48 @@ function httpGetJson(url, options = {}) {
 // NCBI TAXONOMY ENRICHMENT
 // --------------------------------------------------------------
 async function enrichTaxonomy(taxid) {
-  const out = {
-    species: null,
-    order: null,
-    class: null,
-    common_name: null,
-    image: null
-  };
+    const out = {
+	species: null,
+	order: null,
+	class: null,
+	common_name: null,
+	image: null
+    };
 
-  try {
-    // 1. Fetch main taxon info
-    const mainUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
-    const mainJson = await httpGetJson(mainUrl);
-    const mainNode = mainJson?.taxonomy_nodes?.[0]?.taxonomy;
+    try {
+	// 1. Fetch main taxon info
+	const mainUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
+	const mainJson = await httpGetJson(mainUrl);
+	const mainNode = mainJson?.taxonomy_nodes?.[0]?.taxonomy;
 
-    if (!mainNode) {
-      console.warn("No taxonomy found for", taxid);
-      return out;
+	if (!mainNode) {
+	    console.warn("No taxonomy found for", taxid);
+	    return out;
+	}
+
+	// species + common names
+	out.species = mainNode.organism_name || null;
+	out.common_name = mainNode.genbank_common_name || mainNode.common_name || null;
+
+	// 2. Fetch lineage details in batch
+	const lineageIds = mainNode.lineage || [];
+
+	// 3. Extract rank-based entries
+	for (const lineageId of lineageIds) {
+	    const batchUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${lineageId}`;
+	    const batchResponse = await httpGetJson(batchUrl);
+	    const t = batchResponse?.taxonomy_nodes?.[0]?.taxonomy || null;
+
+	    if (!t) continue;
+	    if (t.rank === "ORDER" && !out.order) out.order = t.organism_name;
+	    if (t.rank === "CLASS" && !out.class) out.class = t.organism_name;
+	}
+   } catch (err) {
+	console.warn("❗ Taxonomy enrichment failed for", taxid, err);
     }
 
-    // species + common names
-    out.species = mainNode.organism_name || null;
-    out.common_name = mainNode.genbank_common_name || mainNode.common_name || null;
-
-    // 2. Fetch lineage details concurrently
-    const lineageIds = mainNode.lineage || [];
-    if (lineageIds.length === 0) return out;
-
-    const lineagePromises = lineageIds.map(async (lineageId) => {
-      try {
-        const url = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${lineageId}`;
-        const json = await httpGetJson(url);
-        return json?.taxonomy_nodes?.[0]?.taxonomy || null;
-      } catch {
-        return null;
-      }
-    });
-
-    const lineageTaxa = (await Promise.all(lineagePromises)).filter(Boolean);
-
-    // 3. Choose deepest ORDER and CLASS (last in lineage)
-    for (const t of lineageTaxa) {
-      if (t.rank === "CLASS") out.class = t.organism_name;
-      if (t.rank === "ORDER") out.order = t.organism_name;
-    }
-
-  } catch (err) {
-    console.warn("❗ Taxonomy enrichment failed for", taxid, err);
-  }
-
-  return out;
+    return out;
 }
-
-//async function enrichTaxonomy(taxid) {
-//    const out = {
-//	species: null,
-//	order: null,
-//	class: null,
-//	common_name: null,
-//	image: null
-//    };
-//
-//    try {
-//	// 1. Fetch main taxon info
-//	const mainUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
-//	const mainJson = await httpGetJson(mainUrl);
-//	const mainNode = mainJson?.taxonomy_nodes?.[0]?.taxonomy;
-//
-//	if (!mainNode) {
-//	    console.warn("No taxonomy found for", taxid);
-//	    return out;
-//	}
-//
-//	// species + common names
-//	out.species = mainNode.organism_name || null;
-//	out.common_name = mainNode.genbank_common_name || mainNode.common_name || null;
-//
-//	// 2. Fetch lineage details in batch
-//	const lineageIds = mainNode.lineage || [];
-//
-//	// 3. Extract rank-based entries
-//	for (const lineageId of lineageIds) {
-//	    const batchUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${lineageId}`;
-//	    const batchResponse = await httpGetJson(batchUrl);
-//	    const t = batchResponse?.taxonomy_nodes?.[0]?.taxonomy || null;
-//
-//	    if (!t) continue;
-//	    if (t.rank === "ORDER" && !out.order) out.order = t.organism_name;
-//	    if (t.rank === "CLASS" && !out.class) out.class = t.organism_name;
-//	}
-//   } catch (err) {
-//	console.warn("❗ Taxonomy enrichment failed for", taxid, err);
-//    }
-//
-//    return out;
-//}
 
 // --------------------------------------------------------------
 // BIBTEX GENERATION (Crossref + CSL fallback)
