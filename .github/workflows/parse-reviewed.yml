@@ -23,9 +23,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const path = require('path');
-            const core = require('@actions/core');
-            
+            const path = require('path');           
             const issue = context.payload.issue;
             const issueNumber = issue.number;
             
