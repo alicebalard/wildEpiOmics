@@ -1,1 +1,5 @@
-{}(base)
+{
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC10917582/#ece311127-sec-0002": "Resource not found.",
+  "10.1111/mec.13436": "@article{Lea_2016, title={Resource base influences genome‐wide<scp>DNA</scp>methylation levels in wild baboons (Papio cynocephalus)}, volume={25}, ISSN={1365-294X}, url={http://dx.doi.org/10.1111/mec.13436}, DOI={10.1111/mec.13436}, number={8}, journal={Molecular Ecology}, publisher={Wiley}, author={Lea, Amanda J. and Altmann, Jeanne and Alberts, Susan C. and Tung, Jenny}, year={2016}, month=jan, pages={1681–1696} }",
+  "https://doi.org/10.1073/pnas.2309469121": "@article{Anderson_2024, title={DNA methylation signatures of early-life adversity are exposure-dependent in wild baboons}, volume={121}, ISSN={1091-6490}, url={http://dx.doi.org/10.1073/pnas.2309469121}, DOI={10.1073/pnas.2309469121}, number={11}, journal={Proceedings of the National Academy of Sciences}, publisher={Proceedings of the National Academy of Sciences}, author={Anderson, Jordan A. and Lin, Dana and Lea, Amanda J. and Johnston, Rachel A. and Voyles, Tawni and Akinyi, Mercy Y. and Archie, Elizabeth A. and Alberts, Susan C. and Tung, Jenny}, year={2024}, month=mar }"
+}
