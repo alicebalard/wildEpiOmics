@@ -11,9 +11,12 @@ jobs:
     permissions:
       contents: write
       issues: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Parse issue → data/*.yaml
         uses: actions/github-script@v7
@@ -21,64 +24,101 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
+            const core = require('@actions/core');
+            
             const issue = context.payload.issue;
-            const body = issue.body || '';
-      
-            const m = body.match(/```ya?ml\s*\n([\s\S]*?)```/i);
-            if (!m) {
+            const issueNumber = issue.number;
+            
+            // Get issue body
+            const { data: issueData } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+            const body = issueData.body || '';
+
+            console.log('Processing issue:', issueNumber);
+            console.log('Body preview:', body.substring(0, 500));
+
+            // Try to extract YAML block first (backward compatibility)
+            let yamlText = null;
+            const yamlMatch = body.match(/```ya?ml\s*\n([\s\S]*?)\n```/i);
+            if (yamlMatch) {
+              yamlText = yamlMatch[1];
+              console.log('Found YAML block');
+            } else {
+              // Parse form fields
+              console.log('Parsing form fields');
+              const doiMatch = body.match(/doi[:\s]*`?([^\s\n`]+)/i) || 
+                              body.match(/input name="doi" value="([^"]+)"/i);
+              const taxMatch = body.match(/taxid[:\s]*`?(\d+)/i) || 
+                              body.match(/input name="taxid" value="(\d+)"/i);
+              const titleMatch = body.match(/title[:\s]*([^\n]+)/i);
+              const yearMatch = body.match(/\b(19|20)\d{2}\b/) || 
+                               body.match(/year[:\s]*`?(\d{4})/i);
+              const authorsMatch = body.match(/authors[:\s]*([^\n]+)/i);
+
+              const taxid = taxMatch ? taxMatch[1] : 'entry';
+              const year = yearMatch ? yearMatch[1] : '2024';
+              const doi = doiMatch ? doiMatch[1] : 'no-doi';
+
+              yamlText = `taxid: ${taxid}\ndoi: ${doi}\nyear: ${year}\ntitle: "${titleMatch ? titleMatch[1].trim() : 'Untitled'}"\nauthors: "${authorsMatch ? authorsMatch[1].trim() : 'Unknown'}"`;
+            }
+
+            if (!yamlText) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: issue.number,
-                body: 'No ```yaml code block found.'
+                issue_number: issueNumber,
+                body: '❌ Could not extract data. Please include a `taxid` and `doi`.'
               });
               return;
             }
-      
-            const yaml = m;[12]
-      
-            const tax = (yaml.match(/taxid:\s*(\d+)/i) || [])[12] || 'entry';
-            const year = (yaml.match(/\b(19|20)\d{2}\b/) || []) || 'y';
+
+            // Generate filename
+            const tax = (yamlText.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
+            const year = (yamlText.match(/\b(19|20)\d{2}\b/) || [])[0] || 'y';
             const base = `data/${tax}_${year}`.replace(/[^a-zA-Z0-9_\-\/]/g, '');
             let filename = `${base}.yaml`;
-            if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
-      
-            fs.writeFileSync(filename, yaml);
-      
-            // make sure we're up to date with origin/main
+            if (fs.existsSync(filename)) filename = `${base}_${issueNumber}.yaml`;
+
+            console.log('Writing:', filename);
+
+            // Write file
+            fs.writeFileSync(filename, yamlText);
+
+            // Git setup
             await exec.exec('git', ['fetch', 'origin']);
             await exec.exec('git', ['checkout', 'main']);
-            await exec.exec('git', ['merge', 'origin/main']);
-      
-            await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
-            await exec.exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
+            await exec.exec('git', ['pull', 'origin', 'main']);
+            
+            await exec.exec('git', ['config', 'user.name', 'github-actions[bot]']);
+            await exec.exec('git', ['config', 'user.email', 'github-actions[bot]@users.noretry.github.com']);
             await exec.exec('git', ['add', filename]);
-      
-            // allow “nothing to commit” without failing
-            try {
-              await exec.exec('git', ['commit', '-m', `Add entry from Issue #${issue.number}`]);
-            } catch (e) {
-              core.info('Nothing to commit');
+
+            // Commit if there are changes
+            const commitResult = await exec.exec('git', ['commit', '-m', `Add study from Issue #${issueNumber}`], { ignoreReturnCode: true });
+            if (commitResult.exitCode === 0) {
+              await exec.exec('git', ['push', 'origin', 'main']);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `✅ **Added!** Saved as \`${filename}\` → [View file](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${filename})\n\nSite will rebuild shortly.`
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `ℹ️ File \`${filename}\` already exists (no changes).`
+              });
             }
-      
-            await exec.exec('git', ['push', 'origin', 'main']);
-      
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              body: `Saved as \`${filename}\``
-            });
-      
+
+            // Close issue
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: issue.number,
+              issue_number: issueNumber,
               state: 'closed'
             });
-      
-      - name: Trigger deployment workflow
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: trigger-build

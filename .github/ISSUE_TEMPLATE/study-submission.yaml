@@ -1,0 +1,62 @@
+name: "📚 New Study Submission"
+description: Submit a new wildlife epigenetics study for review
+title: "[STUDY] Add new study"
+labels: ["new-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out all fields below. After review, we'll add it to the catalog.
+
+  - type: input
+    id: doi
+    attributes:
+      label: DOI
+      description: e.g. `10.1038/s41586-024-12345-6`
+      placeholder: "10.1038/..."
+      required: true
+
+  - type: input
+    id: taxid
+    attributes:
+      label: NCBI Taxon ID
+      description: e.g. `9606` for human, `10090` for mouse
+      placeholder: "9606"
+      required: true
+
+  - type: textarea
+    id: title
+    attributes:
+      label: Study title
+      placeholder: "Full title of the paper"
+      required: true
+
+  - type: textarea
+    id: authors
+    attributes:
+      label: Authors
+      placeholder: "Author1 Lastname1, Author2 Lastname2, ..."
+      required: true
+
+  - type: dropdown
+    id: year
+    attributes:
+      label: Publication year
+      options:
+        - "2026"
+        - "2025"
+        - "2024"
+        - "2023"
+        - "Other"
+      required: true
+
+  - type: textarea
+    id: abstract
+    attributes:
+      label: Abstract/Description (optional)
+      placeholder: "Brief summary..."
+
+  - type: markdown
+    attributes:
+      value: |
+        **After submission, a maintainer will review and apply the `reviewed` label to process it.**
