@@ -97,13 +97,42 @@ jobs:
             // Commit if there are changes
             const commitResult = await exec.exec('git', ['commit', '-m', `Add study from Issue #${issueNumber}`], { ignoreReturnCode: true });
             if (commitResult.exitCode === 0) {
-              await exec.exec('git', ['push', 'origin', 'main']);
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                body: `✅ **Added!** Saved as \`${filename}\` → [View file](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${filename})\n\nSite will rebuild shortly.`
-              });
+              console.log('✅ Committed, now pushing...');
+              
+              try {
+                const pushResult = await exec.exec('git', ['push', 'origin', 'main'], { 
+                  ignoreReturnCode: true,  // ← ADD THIS
+                  silent: false            // ← SHOW OUTPUT
+                });
+                
+                console.log('PUSH EXIT CODE:', pushResult.exitCode);
+                console.log('PUSH STDOUT:', pushResult.stdout);
+                console.log('PUSH STDERR:', pushResult.stderr);
+                
+                if (pushResult.exitCode === 0) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    body: `✅ **Added!** Saved as \`${filename}\` → [View file](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${filename})\n\nSite will rebuild shortly.`
+                  });
+                } else {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    body: `❌ **Push failed!**\n\`\`\`\n${pushResult.stderr}\n\`\`\`\nFile created locally but not pushed.`
+                  });
+                }
+              } catch (pushError) {
+                console.error('PUSH CRASHED:', pushError);
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  body: `💥 **Push crashed!**\n\`\`\`\n${pushError.message}\n\`\`\``
+                });
+              }
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -112,7 +141,7 @@ jobs:
                 body: `ℹ️ File \`${filename}\` already exists (no changes).`
               });
             }
-
+        
             // Close issue
             await github.rest.issues.update({
               owner: context.repo.owner,
