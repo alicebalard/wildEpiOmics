@@ -15,68 +15,68 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-- name: Parse issue → data/*.yaml
-  uses: actions/github-script@v7
-  with:
-    script: |
-      const fs = require('fs');
-      const path = require('path');
-      const issue = context.payload.issue;
-      const body = issue.body || '';
-
-      const m = body.match(/```ya?ml\s*\n([\s\S]*?)```/i);
-      if (!m) {
-        await github.rest.issues.createComment({
-          owner: context.repo.owner,
-          repo: context.repo.repo,
-          issue_number: issue.number,
-          body: 'No ```yaml code block found.'
-        });
-        return;
-      }
-
-      const yaml = m;[12]
-
-      const tax = (yaml.match(/taxid:\s*(\d+)/i) || [])[12] || 'entry';
-      const year = (yaml.match(/\b(19|20)\d{2}\b/) || []) || 'y';
-      const base = `data/${tax}_${year}`.replace(/[^a-zA-Z0-9_\-\/]/g, '');
-      let filename = `${base}.yaml`;
-      if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
-
-      fs.writeFileSync(filename, yaml);
-
-      // make sure we're up to date with origin/main
-      await exec.exec('git', ['fetch', 'origin']);
-      await exec.exec('git', ['checkout', 'main']);
-      await exec.exec('git', ['merge', 'origin/main']);
-
-      await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
-      await exec.exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
-      await exec.exec('git', ['add', filename]);
-
-      // allow “nothing to commit” without failing
-      try {
-        await exec.exec('git', ['commit', '-m', `Add entry from Issue #${issue.number}`]);
-      } catch (e) {
-        core.info('Nothing to commit');
-      }
-
-      await exec.exec('git', ['push', 'origin', 'main']);
-
-      await github.rest.issues.createComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        issue_number: issue.number,
-        body: `Saved as \`${filename}\``
-      });
-
-      await github.rest.issues.update({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        issue_number: issue.number,
-        state: 'closed'
-      });
-
+      - name: Parse issue → data/*.yaml
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+      
+            const m = body.match(/```ya?ml\s*\n([\s\S]*?)```/i);
+            if (!m) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: 'No ```yaml code block found.'
+              });
+              return;
+            }
+      
+            const yaml = m;[12]
+      
+            const tax = (yaml.match(/taxid:\s*(\d+)/i) || [])[12] || 'entry';
+            const year = (yaml.match(/\b(19|20)\d{2}\b/) || []) || 'y';
+            const base = `data/${tax}_${year}`.replace(/[^a-zA-Z0-9_\-\/]/g, '');
+            let filename = `${base}.yaml`;
+            if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
+      
+            fs.writeFileSync(filename, yaml);
+      
+            // make sure we're up to date with origin/main
+            await exec.exec('git', ['fetch', 'origin']);
+            await exec.exec('git', ['checkout', 'main']);
+            await exec.exec('git', ['merge', 'origin/main']);
+      
+            await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
+            await exec.exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
+            await exec.exec('git', ['add', filename]);
+      
+            // allow “nothing to commit” without failing
+            try {
+              await exec.exec('git', ['commit', '-m', `Add entry from Issue #${issue.number}`]);
+            } catch (e) {
+              core.info('Nothing to commit');
+            }
+      
+            await exec.exec('git', ['push', 'origin', 'main']);
+      
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `Saved as \`${filename}\``
+            });
+      
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              state: 'closed'
+            });
+      
       - name: Trigger deployment workflow
         uses: peter-evans/repository-dispatch@v3
         with:
