@@ -24,17 +24,44 @@ jobs:
 
             const issue = context.payload.issue;
             const body = issue.body || '';
-            const m = body.match(/```yaml\n([\s\S]*?)\n```/);
-
-            if (!m) {
+	    
+            // Parse form fields OR yaml block
+            let yaml;
+            const yamlMatch = body.match(/```ya?ml\s*\n([\s\S]*?)\n```/i);
+            if (yamlMatch) {
+              yaml = yamlMatch[1];
+              console.log('Found YAML block');
+            } else {
+              // Parse ### form fields from Issue #6
+              const doi = (body.match(/###\s*DOI\s*\n\s*([^\n]+)/i) || [])[1]?.trim() || 'no-doi';
+              const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1] || 'unknown';
+              const yearMatch = body.match(/\b(20\d{2})\b/) || ['2024'];
+              
+              yaml = `taxid: ${taxid}\ndoi: ${doi}\nyear: ${yearMatch[0]}`;
+              console.log('Parsed form fields → YAML');
+            }
+            
+            if (!yaml.includes('taxid') || yaml.includes('unknown')) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                body: 'No ```yaml code block found.'
+                body: '❌ Need `taxid` (### NCBI Taxon ID)'
               });
               return;
             }
+            
+//const m = body.match(/```yaml\n([\s\S]*?)\n```/);
+	    //
+            //if (!m) {
+            //  await github.rest.issues.createComment({
+            //    owner: context.repo.owner,
+            //    repo: context.repo.repo,
+            //    issue_number: issue.number,
+            //    body: 'No ```yaml code block found.'
+            //  });
+            //  return;
+            //}
 
             const yaml = m[1];
 
