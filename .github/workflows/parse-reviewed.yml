@@ -42,8 +42,8 @@ jobs:
 
             // Parse form fields (ALWAYS - simplified)
             const doiMatch = body.match(/doi[:\s]*`?([^`\n]+)/i);
-            const taxMatch = body.match(/taxid[:\s]*`?(\d+)/i);
-            const tissueMatch = body.match(/tissue[:\s]*`?([^`\n]+)/i);
+	    const taxMatch = body.match(/.*Taxon.*ID[:\s]*`?(\d+)/i) || body.match(/taxid[:\s]*`?(\d+)/i);
+	    const tissueMatch = body.match(/tissue[:\s]*`?([^`\n]+)/i);
             const methodMatch = body.match(/method[:\s]*`?([^`\n]+)/i);
             const individualsMatch = body.match(/number of sequenced individuals[:\s]*`?(\d+)/i);
             const notesMatch = body.match(/notes[:\s]*([\s\S]*?)(?=\n###|\n$)/i);
