@@ -101,7 +101,7 @@ jobs:
             // Generate filename
             const tax = taxid;
             const fileYear = entryYear;
-            const base = `data/${tax}_${fileYear}`.replace(/[^a-zA-Z0-9_-/]/g, '');
+            const base = `data/${tax}_${fileYear}`.replace(/[^a-zA-Z0-9_/-]/g, '');
             let filename = `${base}.yaml`;
             if (fs.existsSync(filename)) filename = `${base}_${issueNumber}.yaml`;
 
