@@ -27,6 +27,15 @@ body:
       required: true
 
   - type: input
+    id: tissue
+    attributes:
+      label: tissue sampled
+      description: e.g. blood, liver...
+      placeholder: "blood"
+    validations:
+      required: true
+
+  - type: input
     id: data_url
     attributes:
       label: URL of raw data
