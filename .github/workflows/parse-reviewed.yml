@@ -95,54 +95,49 @@ jobs:
             await exec.exec('git', ['add', filename]);
 
             // Commit if there are changes
+
+            console.log('🔍 DEBUG: About to commit...');
             const commitResult = await exec.exec('git', ['commit', '-m', `Add study from Issue #${issueNumber}`], { ignoreReturnCode: true });
+            console.log('🔍 DEBUG: Commit exit code:', commitResult.exitCode);
+            
             if (commitResult.exitCode === 0) {
-              console.log('✅ Committed, now pushing...');
+              console.log('🚀 DEBUG: COMMIT SUCCESS - NOW PUSHING...');
               
-              try {
-                const pushResult = await exec.exec('git', ['push', 'origin', 'main'], { 
-                  ignoreReturnCode: true,  // ← ADD THIS
-                  silent: false            // ← SHOW OUTPUT
-                });
-                
-                console.log('PUSH EXIT CODE:', pushResult.exitCode);
-                console.log('PUSH STDOUT:', pushResult.stdout);
-                console.log('PUSH STDERR:', pushResult.stderr);
-                
-                if (pushResult.exitCode === 0) {
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: issueNumber,
-                    body: `✅ **Added!** Saved as \`${filename}\` → [View file](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${filename})\n\nSite will rebuild shortly.`
-                  });
-                } else {
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: issueNumber,
-                    body: `❌ **Push failed!**\n\`\`\`\n${pushResult.stderr}\n\`\`\`\nFile created locally but not pushed.`
-                  });
-                }
-              } catch (pushError) {
-                console.error('PUSH CRASHED:', pushError);
+              // Show git status BEFORE push
+              const status = await exec.exec('git', ['status'], { silent: false });
+              console.log('🔍 DEBUG: Git status before push:\n', status.stdout);
+              
+              // TRY PUSH with FULL DEBUG
+              const pushResult = await exec.exec('git', ['push', 'origin', 'main'], { 
+                silent: false,           // SHOW ALL OUTPUT
+                ignoreReturnCode: true   // DON'T CRASH
+              });
+              
+              console.log('🚀 DEBUG: Push exit code:', pushResult.exitCode);
+              console.log('🚀 DEBUG: Push stdout:', pushResult.stdout);
+              console.log('🚀 DEBUG: Push stderr:', pushResult.stderr);
+              
+              if (pushResult.exitCode === 0) {
+                console.log('✅ DEBUG: PUSH SUCCESS!');
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issueNumber,
-                  body: `💥 **Push crashed!**\n\`\`\`\n${pushError.message}\n\`\`\``
+                  body: `✅ **Added!** \`${filename}\` → [View](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/${filename})`
+                });
+              } else {
+                console.log('❌ DEBUG: PUSH FAILED');
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  body: `❌ **Push failed!**\nExit: ${pushResult.exitCode}\n\`\`\`\n${pushResult.stderr}\n\`\`\``
                 });
               }
             } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                body: `ℹ️ File \`${filename}\` already exists (no changes).`
-              });
+              console.log('ℹ️ DEBUG: No commit needed');
             }
-        
-            // Close issue
+                        // Close issue
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
