@@ -20,47 +20,54 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const path = require('path');
-
             const issue = context.payload.issue;
             const body = issue.body || '';
-            // Parse form fields OR yaml block
-            let yaml;
+            
+            // Parse YAML block OR form fields
+            let yamlContent;
             const yamlMatch = body.match(/```ya?ml\s*\n([\s\S]*?)\n```/i);
             if (yamlMatch) {
-              yaml = yamlMatch[1];
+              yamlContent = yamlMatch[1];
               console.log('Found YAML block');
             } else {
-              // Parse 
+              // Parse Issue #6 form format
               const doi = (body.match(/###\s*DOI\s*\n\s*([^\n]+)/i) || [])[1]?.trim() || 'no-doi';
-              const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1] || 'unknown';
+              const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1];
               const yearMatch = body.match(/\b(20\d{2})\b/) || ['2024'];
               
-              yaml = `taxid: ${taxid}\ndoi: ${doi}\nyear: ${yearMatch[0]}`;
+              if (!taxid) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: '❌ Missing ### NCBI Taxon ID'
+                });
+                return;
+              }
+              
+              yamlContent = `taxid: ${taxid}\ndoi: ${doi}\nyear: ${yearMatch[0]}`;
               console.log('Parsed form fields → YAML');
             }
             
-            if (!yaml.includes('taxid') || yaml.includes('unknown')) {
+            if (!yamlContent.includes('taxid')) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                body: '❌ Need `taxid` (### NCBI Taxon ID)'
+                body: '❌ Need valid taxid (### NCBI Taxon ID)'
               });
               return;
             }
             
-            const yaml = m[1];
-
-            const tax = (yaml.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
-            const doi = (yaml.match(/doi:\s*([^\n\r\s]+)/i) || [])[1] || 'no-doi';
-            const year = (yaml.match(/\b(19|20)\d{2}\b/) || [])[0] || 'y';
-
-            const base = `data/${tax}_${year}`.replace(/[^a-zA-Z0-9_\-\/]/g,'');
+            // Extract from yamlContent (SINGLE declarations only)
+            const tax = (yamlContent.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
+            const year = (yamlContent.match(/\b(19|20)\d{2}\b/) || [])[0] || '24';
+            
+            const base = `data/${tax}_${year}`.replace(/[^a-zA-Z0-9_\/-]/g, '');
             let filename = `${base}.yaml`;
             if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
 
-            fs.writeFileSync(filename, yaml);
+            fs.writeFileSync(filename, yamlContent);
 
             await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
             await exec.exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
@@ -72,7 +79,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue.number,
-              body: `Saved as \`${filename}\``
+              body: `✅ Saved as \`${filename}\` [View](${context.repo.html_url}/blob/main/${filename})`
             });
 
             await github.rest.issues.update({
