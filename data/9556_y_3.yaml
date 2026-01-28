@@ -1,6 +1,6 @@
-doi:https://doi.org/10.1073/pnas.2309469121
-taxid:9556
-individuals:31
-data_url:https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=970398
-method:RRBS
-notes:early-life adversity in wild baboons predicts DNA methylation levels in adulthood
+doi: https://doi.org/10.1073/pnas.2309469121
+taxid: 9556
+individuals: 31
+data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=970398
+method: RRBS
+notes: early-life adversity in wild baboons predicts DNA methylation levels in adulthood
