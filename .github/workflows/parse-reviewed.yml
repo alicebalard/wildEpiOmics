@@ -24,7 +24,6 @@ jobs:
 
             const issue = context.payload.issue;
             const body = issue.body || '';
-	    
             // Parse form fields OR yaml block
             let yaml;
             const yamlMatch = body.match(/```ya?ml\s*\n([\s\S]*?)\n```/i);
@@ -32,7 +31,7 @@ jobs:
               yaml = yamlMatch[1];
               console.log('Found YAML block');
             } else {
-              // Parse ### form fields from Issue #6
+              // Parse 
               const doi = (body.match(/###\s*DOI\s*\n\s*([^\n]+)/i) || [])[1]?.trim() || 'no-doi';
               const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1] || 'unknown';
               const yearMatch = body.match(/\b(20\d{2})\b/) || ['2024'];
@@ -51,18 +50,6 @@ jobs:
               return;
             }
             
-            //const m = body.match(/```yaml\n([\s\S]*?)\n```/);
-	    //
-            //if (!m) {
-            //  await github.rest.issues.createComment({
-            //    owner: context.repo.owner,
-            //    repo: context.repo.repo,
-            //    issue_number: issue.number,
-            //    body: 'No ```yaml code block found.'
-            //  });
-            //  return;
-            //}
-
             const yaml = m[1];
 
             const tax = (yaml.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
