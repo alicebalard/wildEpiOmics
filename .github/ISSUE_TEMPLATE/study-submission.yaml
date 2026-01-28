@@ -21,8 +21,17 @@ body:
     id: taxid
     attributes:
       label: NCBI Taxon ID
-      description: e.g. `9606` for human, `10090` for mouse
+      description: e.g. `9606` for human, `10090` for mouse; find yours at https://www.ncbi.nlm.nih.gov/datasets/taxonomy/tree/
       placeholder: "9606"
+    validations:
+      required: true
+
+  - type: input
+    id: data_url
+    attributes:
+      label: URL of raw data
+      description: link to the list of raw data
+      placeholder: "https://www.ncbi.nlm.nih.gov/sra/?term=SRP058411"
     validations:
       required: true
 
@@ -32,6 +41,15 @@ body:
       label: method
       description: e.g. `RRBS, WGBS...`
       placeholder: "RRBS"
+    validations:
+      required: true
+      
+  - type: input
+    id: individuals
+    attributes:
+      label: number of sequenced individuals
+      description: e.g. `10, 15...`
+      placeholder: "10"
     validations:
       required: true
 
