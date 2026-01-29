@@ -1,0 +1,10 @@
+doi: 10.1093/molbev/msu344
+taxid: 69293
+individuals: 8
+data_url: https://www.ebi.ac.uk/ena/browser/view/PRJEB7912
+tissue: lateral plate
+method: RRBS
+notes: |
+  Genome-wide DNA methylation patterns in wild samples of two morphotypes of threespine stickleback (Gasterosteus aculeatus)
+  8 females
+  Tissue: lateral plates
