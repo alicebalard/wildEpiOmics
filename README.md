@@ -10,8 +10,18 @@
 [![Live Site](https://img.shields.io/badge/🌐_Live_Site-wildEpiOmics-blue)](https://alicebalard.github.io/wildEpiOmics/)
 
 ## How to add an entry?
+With a gihub account:
 - click on "issues" and fill the form
 - your issue will be reviewed by a maintainer and added to the website
 
+Without a gihub account, send ALL the following information to alice.cam.balard@gmail.com who will add your study:
+- doi of the study (e.g. 10.1038/s41586-024-12345-6)
+- NCBI Taxon ID (e.g. `9606` for human, `10090` for mouse; find yours at https://www.ncbi.nlm.nih.gov/datasets/taxonomy/tree/)
+- tissue sampled (e.g. blood, liver...)
+- URL of raw data (e.g. https://www.ncbi.nlm.nih.gov/sra/?term=SRP058411)
+- method (e.g. `RRBS, WGBS...)
+- number of sequenced individuals (e.g. 10, 15...)
+- Notes (optional)
+        
 ## Notes for maintainer:
 - build.js has the combinations of genus/orders/class hardcoded, be careful if you add new genera to update this!
