@@ -31,11 +31,8 @@ jobs:
               const doi = (body.match(/###\s*DOI\s*\n\s*([^\n]+)/i) || [])[1]?.trim() || '';
               const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1];
               const individuals = (body.match(/###\s*(?:individuals|number of sequenced individuals)\s*\n\s*(\d+)/i) || [])[1];
-              const dataUrlMatch = body.match(/###\s*(?:URL|URL of raw data)[\s\S]*?\[([^\]]*)\]\s*\(\s*(https?:\/\/[^\s)]+)\s*\)/i);
-              console.log('🔍 URL match:', dataUrlMatch);  // DEBUG
-              const dataUrlText = dataUrlMatch ? dataUrlMatch[1] : 'ENA';
-              const dataUrl = dataUrlMatch ? dataUrlMatch[2] : '';
-              console.log('📡 dataUrl:', dataUrl);  // DEBUG
+              const data_url = (body.match(/###\s*(?:URL of raw data|data_url)\s*\n\s*(\d+)/i) || [])[1];
+              const tissue = (body.match(/###\s*(?:tissue sampled|tissue)\s*\n\s*(\d+)/i) || [])[1];
 
               const method = (body.match(/###\s*method\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
               const notesMatch = body.match(/###\s*Notes?\s*\(optional\)\s*\n([\s\S]*)$/i);
