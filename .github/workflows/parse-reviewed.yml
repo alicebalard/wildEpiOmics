@@ -49,7 +49,7 @@ jobs:
               
             yamlContent = `doi: ${doi}\ntaxid: ${taxid}`;
             if (individuals) yamlContent += `\nindividuals: ${individuals}`;
-            if (data_url) yamlContent += `\ndata_url: (${data_url})`;
+            if (data_url) yamlContent += `\ndata_url: ${data_url}`;
             if (tissue) yamlContent += `\ntissue: ${tissue}`;
             if (method) yamlContent += `\nmethod: ${method}`;
             if (notes) yamlContent += `\nnotes: |\n  ${notes.replace(/\n/g, '\n  ')}`;
