@@ -1,0 +1,8 @@
+doi: 10.1111/eva.70013
+taxid: 8467
+individuals: 40
+data_url: https://www.ebi.ac.uk/ena/browser/view/PRJEB75968
+tissue: blood
+method: WGBS
+notes: |
+  DNA methylation carries signatures of sublethal effects under thermal stress in loggerhead sea turtles
