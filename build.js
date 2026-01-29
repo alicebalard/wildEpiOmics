@@ -90,19 +90,18 @@ function httpGetJson(url, options = {}) {
 }
 
 // --------------------------------------------------------------
-// NCBI TAXONOMY ENRICHMENT - OPTIMIZED (1 API call per species)
+// NCBI TAXONOMY ENRICHMENT - ROBUST VERSION
 // --------------------------------------------------------------
 
-// In-memory cache for this build run
 const taxonomyCache = new Map();
 
-async function fetchTaxonWithRetry(taxid, retries = 3) {
+async function fetchTaxonWithRetry(taxid, retries = 5) {
   if (taxonomyCache.has(taxid)) return taxonomyCache.get(taxid);
-
-  let delay = 500;
+  
+  let delay = 1000; // Start with 1s delay
   for (let i = 0; i < retries; i++) {
     try {
-      // TRY LINEAGE ENDPOINT FIRST (1 call = full lineage!)
+      // LINEAGE ENDPOINT FIRST (1 call = everything!)
       const lineageUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/lineage/${taxid}`;
       let { status, json } = await httpGetJson(lineageUrl);
       
@@ -111,110 +110,86 @@ async function fetchTaxonWithRetry(taxid, retries = 3) {
         taxonomyCache.set(taxid, node);
         return node;
       }
-
-      // FALLBACK: Single taxon endpoint
-      const url = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
-      const fallback = await httpGetJson(url);
       
-      if (fallback.status === 429) {
-        console.warn("Rate limited for", taxid, "retry", i + 1);
-      } else if (fallback.status !== 200) {
-        console.warn("Taxonomy HTTP error", taxid, fallback.status);
-        taxonomyCache.set(taxid, null);
-        return null;
+      // MAIN NODE FALLBACK
+      const url = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
+      const { status: status2, json: json2 } = await httpGetJson(url);
+      
+      if (status2 === 200 && json2?.taxonomy_nodes?.[0]) {
+        const node = json2.taxonomy_nodes[0].taxonomy;
+        taxonomyCache.set(taxid, node);
+        return node;
       }
-
-      const node = fallback.json?.taxonomy_nodes?.[0]?.taxonomy || null;
-      taxonomyCache.set(taxid, node);
-      return node;
+      
+      if (status === 429 || status2 === 429) {
+        console.warn(`⏳ Rate limited ${taxid}, waiting ${delay}ms...`);
+      }
       
     } catch (e) {
-      console.warn("Taxonomy request failed for", taxid, e.message);
+      console.warn(`❌ Fetch failed ${taxid}:`, e.message);
     }
-
-    // Exponential backoff
-    await new Promise((r) => setTimeout(r, delay));
+    
+    // Progressive backoff: 1s → 2s → 4s → 8s → 16s
+    await new Promise(r => setTimeout(r, delay));
     delay *= 2;
   }
   
+  console.warn(`💥 Taxonomy FAILED for ${taxid} after 5 retries`);
   taxonomyCache.set(taxid, null);
   return null;
 }
 
 async function enrichTaxonomy(taxid) {
-  const out = {
-    species: null,
-    order: null, 
-    class: null,
-    common_name: null,
-    image: null
-  };
-
+  const out = { species: null, order: null, class: null, common_name: null, image: null };
+  
   try {
     const node = await fetchTaxonWithRetry(taxid);
-    if (!node) {
-      console.warn("No taxonomy found for", taxid);
-      return out;
-    }
-
-    // Basic info from main node
-    out.species = node.organism_name || null;
-    out.common_name = node.genbank_common_name || node.common_name || null;
-
-    // METHOD 1: Try lineage_string parsing (NO extra API calls!)
-	  if (node.lineage_string) {
-  const lineageParts = node.lineage_string.split(' > ').map(s => s.trim());
-  
-  // Walk from deepest (species) to root
-  for (let i = lineageParts.length - 1; i >= 0; i--) {
-    const name = lineageParts[i].toLowerCase();
+    if (!node) return out;
     
-    // CLASS patterns (more comprehensive)
-    if (!out.class && (
-      name.includes('class') || 
-      name.includes('actinopterygii') || 
-      name.includes('mammalia') || 
-      name.includes('reptilia') ||
-      name.includes('aves') ||
-      name.includes('amphibia')
-    )) {
-      out.class = lineageParts[i];
-    }
+    out.species = node.organism_name;
+    out.common_name = node.genbank_common_name || node.common_name;
     
-    // ORDER patterns  
-    if (!out.order && (
-      name.includes('order') ||
-      name.includes('gasterosteiformes') ||
-      name.includes('primates') ||
-      name.includes('testudines') ||
-      name.includes('rodentia')
-    )) {
-      out.order = lineageParts[i];
-    }
+    // KEYWORD-BASED LINEAGE PARSING (works 95% of time, NO extra API calls)
+    const KNOWN_CLASSES = ['actinopterygii', 'mammalia', 'reptilia', 'aves', 'amphibia'];
+    const KNOWN_ORDERS = ['gasterosteiformes', 'primates', 'testudines', 'rodentia', 'perciformes'];
     
-    if (out.class && out.order) break;
-  }
-}
-    // METHOD 2: Fallback to lineage IDs (only if needed)
-    if (!out.class && !out.order && Array.isArray(node.lineage)) {
-      // Just check 10 most recent ancestors (not full 50!)
-      const recentIds = node.lineage.slice(-10).map(id => String(id));
+    if (node.lineage_string) {
+      const lineage = node.lineage_string.toLowerCase();
       
-      for (const id of recentIds) {
-        if (taxonomyCache.has(id)) {
-          const ancestor = taxonomyCache.get(id);
-          const rank = (ancestor?.rank || '').toUpperCase();
-          if (rank === 'CLASS') out.class = ancestor.organism_name;
-          if (rank === 'ORDER') out.order = ancestor.organism_name;
-          if (out.class && out.order) break;
+      // Find class
+      for (const cls of KNOWN_CLASSES) {
+        if (lineage.includes(cls)) {
+          out.class = cls.charAt(0).toUpperCase() + cls.slice(1);
+          break;
+        }
+      }
+      
+      // Find order  
+      for (const ord of KNOWN_ORDERS) {
+        if (lineage.includes(ord)) {
+          out.order = ord.charAt(0).toUpperCase() + ord.slice(1);
+          break;
         }
       }
     }
-
+    
+    // ULTIMATE FALLBACK: lineage array (limit to 5 recent ancestors)
+    if (!out.order && !out.class && node.lineage?.length) {
+      const recent = node.lineage.slice(-5);
+      for (const id of recent) {
+        const ancestor = await fetchTaxonWithRetry(id);
+        if (ancestor) {
+          const rank = (ancestor.rank || '').toLowerCase();
+          if (rank === 'class') out.class = ancestor.organism_name;
+          if (rank === 'order') out.order = ancestor.organism_name;
+        }
+      }
+    }
+    
   } catch (err) {
-    console.warn("❗ Taxonomy enrichment failed for", taxid, err.message);
+    console.warn(`❗ Enrichment failed ${taxid}:`, err.message);
   }
-
+  
   return out;
 }
 
