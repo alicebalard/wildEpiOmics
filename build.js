@@ -162,22 +162,39 @@ async function enrichTaxonomy(taxid) {
     out.common_name = node.genbank_common_name || node.common_name || null;
 
     // METHOD 1: Try lineage_string parsing (NO extra API calls!)
-    if (node.lineage_string) {
-      const lineageParts = node.lineage_string.split(' > ').map(s => s.trim());
-      // Walk from species up to root
-      for (let i = lineageParts.length - 1; i >= 0; i--) {
-        const rankHint = lineageParts[i].toLowerCase();
-        if (rankHint.includes('class') || rankHint.includes('reptil') || rankHint.includes('mammal')) {
-          out.class = lineageParts[i];
-          break;
-        }
-        if (rankHint.includes('order') || rankHint.includes('primates') || rankHint.includes('testudines')) {
-          out.order = lineageParts[i];
-          if (out.class) break; // Got both!
-        }
-      }
+	  if (node.lineage_string) {
+  const lineageParts = node.lineage_string.split(' > ').map(s => s.trim());
+  
+  // Walk from deepest (species) to root
+  for (let i = lineageParts.length - 1; i >= 0; i--) {
+    const name = lineageParts[i].toLowerCase();
+    
+    // CLASS patterns (more comprehensive)
+    if (!out.class && (
+      name.includes('class') || 
+      name.includes('actinopterygii') || 
+      name.includes('mammalia') || 
+      name.includes('reptilia') ||
+      name.includes('aves') ||
+      name.includes('amphibia')
+    )) {
+      out.class = lineageParts[i];
     }
-
+    
+    // ORDER patterns  
+    if (!out.order && (
+      name.includes('order') ||
+      name.includes('gasterosteiformes') ||
+      name.includes('primates') ||
+      name.includes('testudines') ||
+      name.includes('rodentia')
+    )) {
+      out.order = lineageParts[i];
+    }
+    
+    if (out.class && out.order) break;
+  }
+}
     // METHOD 2: Fallback to lineage IDs (only if needed)
     if (!out.class && !out.order && Array.isArray(node.lineage)) {
       // Just check 10 most recent ancestors (not full 50!)
