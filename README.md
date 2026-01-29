@@ -11,7 +11,7 @@ Link to the webpage &rarr; [![Live Site](https://img.shields.io/badge/🌐_Live_
 
 ## How to add an entry?
 With a gihub account:
-- click on "issues" and fill the form
+- click on the tab "Issues", then "New Issue" button, and fill the form
 - your issue will be reviewed by a maintainer and added to the website
 
 Without a gihub account, send ALL the following information to alice.cam.balard@gmail.com who will add your study:
