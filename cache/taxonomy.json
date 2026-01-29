@@ -1,1 +1,16 @@
-{}
+{
+  "8467": {
+    "species": "Caretta caretta",
+    "order": "Testudines",
+    "class": null,
+    "common_name": "loggerhead turtle",
+    "image": null
+  },
+  "9556": {
+    "species": "Papio cynocephalus",
+    "order": "Primates",
+    "class": "Mammalia",
+    "common_name": "Yellow baboon",
+    "image": null
+  }
+}

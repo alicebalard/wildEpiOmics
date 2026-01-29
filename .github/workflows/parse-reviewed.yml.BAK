@@ -1,0 +1,94 @@
+name: Parse Reviewed Entry
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  process:
+    if: github.event.label.name == 'reviewed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse issue → data/*.yaml
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            
+            let yamlContent;
+            const yamlMatch = body.match(/```ya?ml\s*\n([\s\S]*?)\n```/i);
+            if (yamlMatch) {
+              yamlContent = yamlMatch[1];
+            } else {
+              const doi = (body.match(/###\s*DOI\s*\n\s*([^\n]+)/i) || [])[1]?.trim() || '';
+              const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1];
+              const individuals = (body.match(/###\s*(?:individuals|number of sequenced individuals)\s*\n\s*(\d+)/i) || [])[1];
+
+const dataUrlMatch = body.match(/###\s*(?:URL|URL of raw data)[\s\S]*?\[([^\]]*)\]\s*\(\s*(https?:\/\/[^\s)]+)\s*\)/i);
+console.log('🔍 URL match:', dataUrlMatch);  // DEBUG
+const dataUrlText = dataUrlMatch ? dataUrlMatch[1] : 'ENA';
+const dataUrl = dataUrlMatch ? dataUrlMatch[2] : '';
+console.log('📡 dataUrl:', dataUrl);  // DEBUG
+
+              const method = (body.match(/###\s*method\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
+              const notesMatch = body.match(/###\s*Notes?\s*\(optional\)\s*\n([\s\S]*)$/i);
+              const notes = notesMatch ? notesMatch[1].trim() : '';
+              
+              if (!taxid || !doi) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: '❌ Need ### DOI and ### NCBI Taxon ID'
+                });
+                return;
+              }
+              
+// FIXED: Single \n (not \\n!)
+yamlContent = `doi: ${doi}\ntaxid: ${taxid}`;
+if (individuals) yamlContent += `\nindividuals: ${individuals}`;
+if (dataUrl) yamlContent += `\ndata_url: [${dataUrlText}](${dataUrl})`;
+if (method) yamlContent += `\nmethod: ${method}`;
+if (notes) yamlContent += `\nnotes: |\n  ${notes.replace(/\n/g, '\n  ')}`;
+            }
+            
+            const tax = (yamlContent.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
+            const base = `data/${tax}`;
+            let filename = `${base}.yaml`;
+            if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
+
+            fs.writeFileSync(filename, yamlContent);
+            
+            await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
+            await exec.exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
+            await exec.exec('git', ['add', filename]);
+            await exec.exec('git', ['commit', '-m', `Add entry from Issue #${issue.number}`]);
+            await exec.exec('git', ['push']);
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `✅ **Saved!** \`${filename}\` [View](${context.repo.html_url}/blob/main/${filename})`
+            });
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              state: 'closed'
+            });
+
+      - name: Trigger deployment workflow
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: trigger-build
