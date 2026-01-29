@@ -104,15 +104,18 @@ function render() {
 
     const doiHref = `https://doi.org/${encodeURIComponent(e.doi)}`;
     const dataHref = e.data_url;
-
     links.innerHTML = `
       <label>
         <input type="checkbox" class="checkbox" data-doi="${e.doi}" ${selected.has(e.doi) ? 'checked' : ''}/>
         Select
       </label>
       <a class="link" href="${doiHref}" target="_blank" rel="noopener">DOI</a>
-      <a class="link" href="${dataHref}" target="_blank" rel="noopener">Source data</a>
     `;
+    if (dataHref) {
+      links.innerHTML += `
+      <a class="link" href="${dataHref}" target="_blank" rel="noopener">Source data</a>
+      `;
+    }
     card.appendChild(links);
 
     // ---- NOTES ----
