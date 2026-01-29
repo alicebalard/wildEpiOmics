@@ -31,7 +31,7 @@ jobs:
               const doi = (body.match(/###\s*DOI\s*\n\s*([^\n]+)/i) || [])[1]?.trim() || '';
               const taxid = (body.match(/###\s*(?:NCBI Taxon ID|taxid)\s*\n\s*(\d+)/i) || [])[1];
               const individuals = (body.match(/###\s*(?:individuals|number of sequenced individuals)\s*\n\s*(\d+)/i) || [])[1];
-              const data_url = (body.match(/###\\s*(?:URL of raw data|data_url)\\s*\\n\\s*(\\d+)/i) || [])[1];
+              const data_url = (body.match(/###\s*(?:URL of raw data|data_url)\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
               const tissue = (body.match(/###\s*(?:tissue sampled|tissue)\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
               const method = (body.match(/###\s*method\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
               const notesMatch = body.match(/###\s*Notes?\s*\(optional\)\s*\n([\s\S]*)$/i);
