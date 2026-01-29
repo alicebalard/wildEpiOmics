@@ -124,83 +124,84 @@ async function enrichTaxonomy(taxid) {
   out.species = node.organism_name;
   out.common_name = node.genbank_common_name || node.common_name;
   
-  // CRITICAL DEBUG - show exactly what we get
-  console.log(`🔍 ${taxid} RAW DATA:`, {
-    hasLineageString: !!node.lineage_string,
-    lineagePreview: node.lineage_string?.substring(0, 100),
-    lineageArray: node.lineage?.length,
-    rank: node.rank
-  });
+  // Remove debug logs for production
+  // console.log(`🔍 ${taxid} RAW DATA:`, { ... });
   
-  // STRATEGY 1: Direct rank from main node (if it's class/order level)
+  // STRATEGY 1: Direct rank from main node
   const mainRank = (node.rank || '').toLowerCase();
   if (mainRank === 'class') out.class = node.organism_name;
   if (mainRank === 'order') out.order = node.organism_name;
   
-  // STRATEGY 2: Species name → taxonomic inference (95% vertebrates)
+  // STRATEGY 2: Comprehensive species → vertebrate classification
   const speciesLower = out.species?.toLowerCase() || '';
   
-  // Mammals
-  if (speciesLower.includes('baboon') || speciesLower.includes('papio') || 
-      speciesLower.includes('mus') || speciesLower.includes('rattus')) {
+  // ================================
+  // MAMMALS (most comprehensive)
+  // ================================
+  if (speciesLower.match(/(baboon|papio|lynx|capreolus|equus|cavia|ailuropoda|mustela|crocuta|ursus|monodelphis|ornithorhynchus)/)) {
     out.class = 'Mammalia';
-    out.order = speciesLower.includes('papio') ? 'Primates' : null;
+    if (speciesLower.includes('papio') || speciesLower.includes('baboon')) out.order = 'Primates';
+    else if (speciesLower.includes('lynx') || speciesLower.includes('mustela')) out.order = 'Carnivora';
+    else if (speciesLower.includes('equus')) out.order = 'Perissodactyla';
+    else if (speciesLower.includes('cavia')) out.order = 'Rodentia';
+    else if (speciesLower.includes('crocuta')) out.order = 'Carnivora';
+    else if (speciesLower.includes('ursus')) out.order = 'Carnivora';
   }
   
-  // Reptiles/Turtles  
-  else if (speciesLower.includes('caretta') || speciesLower.includes('turtle') ||
-           speciesLower.includes('testudin')) {
+  // ================================
+  // BIRDS  
+  // ================================
+  else if (speciesLower.match(/(phasianus|tachycineta|parus|corvus|passer)/)) {
+    out.class = 'Aves';
+    if (speciesLower.includes('phasianus')) out.order = 'Galliformes';
+    else if (speciesLower.includes('corvus')) out.order = 'Passeriformes';
+    else if (speciesLower.includes('parus') || speciesLower.includes('passer')) out.order = 'Passeriformes';
+  }
+  
+  // ================================
+  // REPTILES (turtles + lizards + crocodiles)
+  // ================================
+  else if (speciesLower.match(/(caretta|chrysemys|plestiodon|alligator|anolis)/)) {
     out.class = 'Reptilia';
-    out.order = 'Testudines';
+    if (speciesLower.includes('caretta') || speciesLower.includes('chrysemys')) out.order = 'Testudines';
+    else if (speciesLower.includes('plestiodon')) out.order = 'Squamata';
+    else if (speciesLower.includes('alligator')) out.order = 'Crocodilia';
+    else if (speciesLower.includes('anolis')) out.order = 'Squamata';
   }
   
-  // Fish (Actinopterygii = ray-finned fish)
-  else if (speciesLower.includes('gasterosteus') || speciesLower.includes('stickleback') ||
-           speciesLower.includes('danio') || speciesLower.includes('oryzias') ||
-           speciesLower.includes('salmo') || speciesLower.includes('oncorhynchus')) {
-    out.class = 'Actinopterygii';
-    out.order = speciesLower.includes('gasterosteus') ? 'Perciformes' : null;
+  // ================================
+  // AMPHIBIANS
+  // ================================
+  else if (speciesLower.includes('rhinella') || speciesLower.includes('bufo')) {
+    out.class = 'Amphibia';
+    out.order = 'Anura';
   }
   
-  // STRATEGY 3: lineage_string keyword matching (if exists)
+  // ================================
+  // FISH (ray-finned + cartilaginous)
+  // ================================
+  else if (speciesLower.match(/(callorhinchus|rhinoptera|oncorhynchus|gasterosteus|gambusia|mallotus|salvelinus|salmo|melanogrammus)/)) {
+    if (speciesLower.match(/(callorhinchus|rhinoptera)/)) {
+      out.class = 'Chondrichthyes';  // Cartilaginous fish (sharks/rays)
+    } else {
+      out.class = 'Actinopterygii';  // Ray-finned fish
+    }
+    
+    if (speciesLower.includes('gasterosteus')) out.order = 'Perciformes';
+    else if (speciesLower.includes('oncorhynchus') || speciesLower.includes('salmo') || speciesLower.includes('salvelinus')) out.order = 'Salmoniformes';
+    else if (speciesLower.includes('melanogrammus')) out.order = 'Gadiformes';
+  }
+  
+  // STRATEGY 3: lineage_string fallback (if it exists in future)
   if (node.lineage_string) {
     const lineage = node.lineage_string.toLowerCase();
+    const classes = { 'actinopterygii': 'Actinopterygii', 'mammalia': 'Mammalia', 'reptilia': 'Reptilia', 'aves': 'Aves', 'amphibia': 'Amphibia', 'chondrichthyes': 'Chondrichthyes' };
+    const orders = { 'primates': 'Primates', 'testudines': 'Testudines', 'perciformes': 'Perciformes', 'salmoniformes': 'Salmoniformes', 'passeriformes': 'Passeriformes', 'carnivora': 'Carnivora', 'rodentia': 'Rodentia' };
     
-    // Comprehensive vertebrate classes
-    const classes = {
-      'actinopterygii': 'Actinopterygii',
-      'mammalia': 'Mammalia', 
-      'reptilia': 'Reptilia',
-      'aves': 'Aves',
-      'amphibia': 'Amphibia',
-      'chondrichthyes': 'Chondrichthyes'
-    };
-    
-    for (const [key, name] of Object.entries(classes)) {
-      if (lineage.includes(key)) {
-        out.class = name;
-        break;
-      }
-    }
-    
-    // Common orders
-    const orders = {
-      'primates': 'Primates',
-      'testudines': 'Testudines', 
-      'perciformes': 'Perciformes',
-      'gasterosteiformes': 'Gasterosteiformes',
-      'rodentia': 'Rodentia'
-    };
-    
-    for (const [key, name] of Object.entries(orders)) {
-      if (lineage.includes(key)) {
-        out.order = name;
-        break;
-      }
-    }
+    for (const [key, name] of Object.entries(classes)) if (lineage.includes(key)) { out.class = name; break; }
+    for (const [key, name] of Object.entries(orders)) if (lineage.includes(key)) { out.order = name; break; }
   }
   
-  console.log(`✅ ${taxid}: ${out.species} | ${out.order || '?'} | ${out.class || '?'}`);
   return out;
 }
 
