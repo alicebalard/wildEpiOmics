@@ -93,6 +93,8 @@ function render() {
       <span><strong>Class:</strong> ${e.class || '-'}</span>
       <span><strong>Method:</strong> ${e.method}</span>
       <span><strong>N:</strong> ${e.individuals}</span>
+      <span><strong>Tissue:</strong> ${e.tissue}</span>
+
     `;
     card.appendChild(meta);
 
