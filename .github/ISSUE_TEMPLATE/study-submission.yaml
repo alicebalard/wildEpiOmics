@@ -11,7 +11,7 @@ body:
   - type: input
     id: doi
     attributes:
-      label: DOI
+      label: article DOI
       description: e.g. `10.1038/s41586-024-12345-6`
       placeholder: "10.1038/..."
     validations:
