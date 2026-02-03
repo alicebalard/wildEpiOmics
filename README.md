@@ -8,7 +8,11 @@
 
 ## Wildlife DNA methylation studies raw data catalog
 
+&nbsp;
+
 # 🌐 Link to the webpage &rarr; [![Live Site](https://img.shields.io/badge/🌐_Live_Site-wildEpiOmics-blue)](https://alicebalard.github.io/wildEpiOmics/)
+
+&nbsp;
 
 ## How to add an entry?
 With a gihub account:
