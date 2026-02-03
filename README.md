@@ -6,8 +6,9 @@
 ![Study count](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alicebalard/wildEpiOmics/main/.meta/study_count.json)
 ![Last deploy](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alicebalard/wildEpiOmics/main/.meta/last_deploy.json)
 
-# Wildlife DNA methylation studies raw data catalog
-Link to the webpage &rarr; [![Live Site](https://img.shields.io/badge/🌐_Live_Site-wildEpiOmics-blue)](https://alicebalard.github.io/wildEpiOmics/)
+## Wildlife DNA methylation studies raw data catalog
+
+# 🌐 Link to the webpage &rarr; [![Live Site](https://img.shields.io/badge/🌐_Live_Site-wildEpiOmics-blue)](https://alicebalard.github.io/wildEpiOmics/)
 
 ## How to add an entry?
 With a gihub account:
