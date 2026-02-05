@@ -65,9 +65,11 @@ body:
   - type: textarea
     id: abstract
     attributes:
-      label: Notes (optional)
+      label: topic(s) of the study
       placeholder: "..."
-
+    validations:
+      required: true
+      
   - type: markdown
     attributes:
       value: |
