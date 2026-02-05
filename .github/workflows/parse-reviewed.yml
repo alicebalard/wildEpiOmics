@@ -34,7 +34,7 @@ jobs:
               const data_url = (body.match(/###\s*(?:URL of raw data|data_url)\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
               const tissue = (body.match(/###\s*(?:tissue sampled|tissue)\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
               const method = (body.match(/###\s*method\s*\n\s*([^\n]+)/i) || [])[1]?.trim();
-              const notesMatch = body.match(/###\s*Notes?\s*\(optional\)\s*\n([\s\S]*)$/i);
+              const notesMatch = body.match(/###\s*main question\(s\) of the study\?\s*\n([\s\S]*)$/i);
               const notes = notesMatch ? notesMatch[1].trim() : '';
               
               if (!taxid || !doi) {
