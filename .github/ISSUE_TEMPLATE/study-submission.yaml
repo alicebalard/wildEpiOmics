@@ -65,7 +65,7 @@ body:
   - type: textarea
     id: abstract
     attributes:
-      label: topic(s) of the study
+      label: main question(s) of the study
       placeholder: "..."
     validations:
       required: true
