@@ -5,6 +5,7 @@ const $cards = document.getElementById('cards');
 const $fMethod = document.getElementById('f-method');
 const $fOrder = document.getElementById('f-order');
 const $fClass = document.getElementById('f-class');
+const $fTissue = document.getElementById('f-tissue');
 const $fTaxid = document.getElementById('f-taxid');
 const $btnClear = document.getElementById('btn-clear');
 const $btnBib = document.getElementById('btn-download-bib');
@@ -27,10 +28,12 @@ function populateFilters() {
   const methods = uniqueSorted(entries.map(e => e.method));
   const orders = uniqueSorted(entries.map(e => e.order));
   const classes = uniqueSorted(entries.map(e => e.class));
+  const tissues = uniqueSorted(entries.map(e => e.tissue));
 
   for (const v of methods) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fMethod.appendChild(o); }
   for (const v of orders) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fOrder.appendChild(o); }
   for (const v of classes) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fClass.appendChild(o); }
+  for (const v of tissues) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fTissue.appendChild(o); }
 }
 
 function getSelectedValues(sel) {
@@ -41,6 +44,7 @@ function applyFilters() {
   const fm = new Set(getSelectedValues($fMethod));
   const fo = new Set(getSelectedValues($fOrder));
   const fc = new Set(getSelectedValues($fClass));
+  const fc = new Set(getSelectedValues($fTissue));
   const taxText = ($fTaxid.value || '').trim();
   const taxSet = new Set(taxText ? taxText.split(/[\,\s]+/).filter(Boolean) : []);
 
@@ -48,6 +52,7 @@ function applyFilters() {
     if (fm.size && !fm.has(e.method)) return false;
     if (fo.size && !fo.has(e.order)) return false;
     if (fc.size && !fc.has(e.class)) return false;
+    if (fc.size && !fc.has(e.tissue)) return false;
     if (taxSet.size && !taxSet.has(String(e.taxid))) return false;
     return true;
   });
@@ -154,6 +159,7 @@ function clearFilters() {
   [...$fMethod.options].forEach(o => (o.selected = false));
   [...$fOrder.options].forEach(o => (o.selected = false));
   [...$fClass.options].forEach(o => (o.selected = false));
+  [...$fTissue.options].forEach(o => (o.selected = false));
   $fTaxid.value = '';
   render();
 }
@@ -176,6 +182,7 @@ async function downloadBib() {
 $fMethod.addEventListener('change', render);
 $fOrder.addEventListener('change', render);
 $fClass.addEventListener('change', render);
+$fTissue.addEventListener('change', render);
 $fTaxid.addEventListener('input', render);
 $btnClear.addEventListener('click', clearFilters);
 $btnBib.addEventListener('click', downloadBib);
