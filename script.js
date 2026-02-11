@@ -44,7 +44,7 @@ function applyFilters() {
   const fm = new Set(getSelectedValues($fMethod));
   const fo = new Set(getSelectedValues($fOrder));
   const fc = new Set(getSelectedValues($fClass));
-  const fc = new Set(getSelectedValues($fTissue));
+  const ft = new Set(getSelectedValues($fTissue));
   const taxText = ($fTaxid.value || '').trim();
   const taxSet = new Set(taxText ? taxText.split(/[\,\s]+/).filter(Boolean) : []);
 
@@ -52,7 +52,7 @@ function applyFilters() {
     if (fm.size && !fm.has(e.method)) return false;
     if (fo.size && !fo.has(e.order)) return false;
     if (fc.size && !fc.has(e.class)) return false;
-    if (fc.size && !fc.has(e.tissue)) return false;
+    if (ft.size && !fc.has(e.tissue)) return false;
     if (taxSet.size && !taxSet.has(String(e.taxid))) return false;
     return true;
   });
