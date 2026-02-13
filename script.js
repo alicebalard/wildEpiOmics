@@ -195,9 +195,9 @@ $fMethod.addEventListener('change', render);
 $fOrder.addEventListener('change', render);
 $fClass.addEventListener('change', render);
 $fTissue.addEventListener('change', render);
+$btnClear.addEventListener('click', clearFilters);
 $fMinInd.addEventListener('input', render);
 $fSpecies.addEventListener('input', render);
-$btnClear.addEventListener('click', clearFilters);
 $btnBib.addEventListener('click', downloadBib);
 
 populateFilters();
