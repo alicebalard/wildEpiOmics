@@ -52,7 +52,7 @@ function applyFilters() {
     if (fm.size && !fm.has(e.method)) return false;
     if (fo.size && !fo.has(e.order)) return false;
     if (fc.size && !fc.has(e.class)) return false;
-    if (ft.size && !fc.has(e.tissue)) return false;
+    if (ft.size && !ft.has(e.tissue)) return false;
     if (taxSet.size && !taxSet.has(String(e.taxid))) return false;
     return true;
   });
