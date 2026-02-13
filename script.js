@@ -6,7 +6,8 @@ const $fMethod = document.getElementById('f-method');
 const $fOrder = document.getElementById('f-order');
 const $fClass = document.getElementById('f-class');
 const $fTissue = document.getElementById('f-tissue');
-const $fTaxid = document.getElementById('f-taxid');
+const $fMinInd = document.getElementById('f-min-ind');
+const $fSpecies = document.getElementById('f-species');
 const $btnClear = document.getElementById('btn-clear');
 const $btnBib = document.getElementById('btn-download-bib');
 const $selCount = document.getElementById('sel-count');
@@ -44,16 +45,19 @@ function applyFilters() {
   const fm = new Set(getSelectedValues($fMethod));
   const fo = new Set(getSelectedValues($fOrder));
   const fc = new Set(getSelectedValues($fClass));
-  const ft = new Set(getSelectedValues($fTissue));
-  const taxText = ($fTaxid.value || '').trim();
-  const taxSet = new Set(taxText ? taxText.split(/[\,\s]+/).filter(Boolean) : []);
+  const ft = new Set(getSelectedValues($fTissue));  
+  const minInd = parseInt($fMinInd.value) || 0;
+  const speciesText = ($fSpecies.value || '').trim().toLowerCase();
+  const speciesSet = new Set(speciesText ? speciesText.split(/[\s,]+/).filter(Boolean) : []);
 
   return entries.filter(e => {
     if (fm.size && !fm.has(e.method)) return false;
     if (fo.size && !fo.has(e.order)) return false;
     if (fc.size && !fc.has(e.class)) return false;
     if (ft.size && !ft.has(e.tissue)) return false;
-    if (taxSet.size && !taxSet.has(String(e.taxid))) return false;
+    if (minInd > 0 && (parseInt(e.individuals) || 0) < minInd) return false;
+    if (speciesSet.size && !speciesSet.has((e.species || '').toLowerCase())) return false;
+    
     return true;
   });
 }
@@ -191,7 +195,8 @@ $fMethod.addEventListener('change', render);
 $fOrder.addEventListener('change', render);
 $fClass.addEventListener('change', render);
 $fTissue.addEventListener('change', render);
-$fTaxid.addEventListener('input', render);
+$fMinInd.addEventListener('input', render);
+$fSpecies.addEventListener('input', render);
 $btnClear.addEventListener('click', clearFilters);
 $btnBib.addEventListener('click', downloadBib);
 
