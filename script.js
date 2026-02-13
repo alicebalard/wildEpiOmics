@@ -59,7 +59,15 @@ function applyFilters() {
 }
 
 function render() {
-  const list = applyFilters();
+  let list = applyFilters();
+  
+  // Sort alphabetically by species name (fallback to TaxID)
+  list.sort((a, b) => {
+    const nameA = (a.species || '').toLowerCase();
+    const nameB = (b.species || '').toLowerCase();
+    return nameA.localeCompare(nameB) || String(a.taxid).localeCompare(String(b.taxid));
+  });
+  
   $cards.innerHTML = '';
 
   for (const e of list) {
