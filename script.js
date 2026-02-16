@@ -62,7 +62,7 @@ function applyFilters() {
   });
 }
 
-function render() {
+function render() {function clearFilters() {
   let list = applyFilters();
   
   // Sort alphabetically by species name (fallback to TaxID)
@@ -168,11 +168,16 @@ function render() {
 }
 
 function clearFilters() {
+  // clear multi-selects
   [...$fMethod.options].forEach(o => (o.selected = false));
   [...$fOrder.options].forEach(o => (o.selected = false));
   [...$fClass.options].forEach(o => (o.selected = false));
   [...$fTissue.options].forEach(o => (o.selected = false));
-  $fTaxid.value = '';
+  
+  // clear scalar inputs
+  $fMinInd.value = '';
+  $fSpecies.value = '';
+  
   render();
 }
 
