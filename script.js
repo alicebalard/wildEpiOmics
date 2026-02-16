@@ -48,7 +48,6 @@ function applyFilters() {
   const ft = new Set(getSelectedValues($fTissue));  
   const minInd = parseInt($fMinInd.value) || 0;
   const speciesText = ($fSpecies.value || '').trim().toLowerCase();
-  const speciesSet = new Set(speciesText ? speciesText.split(/[\s,]+/).filter(Boolean) : []);
 
   return entries.filter(e => {
     if (fm.size && !fm.has(e.method)) return false;
@@ -56,7 +55,7 @@ function applyFilters() {
     if (fc.size && !fc.has(e.class)) return false;
     if (ft.size && !ft.has(e.tissue)) return false;
     if (minInd > 0 && (parseInt(e.individuals) || 0) < minInd) return false;
-    if (speciesSet.size && !speciesSet.has((e.species || '').toLowerCase())) return false;
+    if (speciesText && !(e.species || '').toLowerCase().includes(speciesText)) return false;
     
     return true;
   });
