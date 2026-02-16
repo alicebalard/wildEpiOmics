@@ -62,7 +62,7 @@ function applyFilters() {
   });
 }
 
-function render() {function clearFilters() {
+function render() {
   let list = applyFilters();
   
   // Sort alphabetically by species name (fallback to TaxID)
