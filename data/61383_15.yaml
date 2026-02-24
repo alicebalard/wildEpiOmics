@@ -1,0 +1,9 @@
+doi: 10.1111/mec.15131
+taxid: 61383
+individuals: 95
+data_url: https://www.ncbi.nlm.nih.gov/biosample?Db=biosample&DbFrom=bioproject&Cmd=Link&LinkName=bioproject_biosample&LinkReadableName=BioSample&ordinalpos=1&IdsFromResult=509991
+tissue: epidermis
+method: RRBS
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Canada_lynx_by_Michael_Zahra_%28cropped%29.jpg/960px-Canada_lynx_by_Michael_Zahra_%28cropped%29.jpg
+notes: |
+    Historical demography & genetic structure; Epigenetic structure; Environmental effect on methylation; Functional relevance of differential methylation
