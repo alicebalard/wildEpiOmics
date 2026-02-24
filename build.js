@@ -109,33 +109,41 @@ async function fetchTaxonMinimal(taxid) {
 
 async function enrichTaxonomy(taxid) {
   const out = { species: null, order: null, class: null, common_name: null };
-
   const node = await fetchTaxonMinimal(taxid);
   if (!node) return out;
 
-  console.log(`🔍 Fetching lineage for ${taxid}...`);
+  console.log(`🔍 Processing ${taxid} (${node.organism_name})`);
   out.species = node.organism_name || null;
   out.common_name = node.genbank_common_name || node.common_name || null;
 
-  const lineageIds = Array.isArray(node.lineage) ? node.lineage : [];
-  let foundClass = null;
-  let foundOrder = null;
-
-  for (let i = lineageIds.length - 1; i >= 0; i--) {
+  // LIMIT: Only check LAST 10 lineage entries (faster)
+  const lineageIds = Array.isArray(node.lineage) ? node.lineage.slice(-10) : [];
+  
+  let foundClass = null, foundOrder = null;
+  for (let i = lineageIds.length - 1; i >= 0 && (!foundClass || !foundOrder); i--) {
     const lt = lineageIds[i];
-    const ln = await fetchTaxonMinimal(lt);
-    if (!ln) continue;
-
-    const rank = (ln.rank || '').toLowerCase();
-    console.log(`  ${lt}: ${ln.organism_name} (${rank})`);
     
-    if (!foundClass && rank === 'class') {
-      foundClass = ln.organism_name;
-    } else if (!foundOrder && rank === 'order') {
-      foundOrder = ln.organism_name;
+    // Skip root/noop nodes
+    if (lt < 10) continue;
+    
+    try {
+      const ln = await Promise.race([
+        fetchTaxonMinimal(lt),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+      ]);
+      
+      if (!ln) continue;
+      
+      const rank = (ln.rank || '').toLowerCase();
+      console.log(`  ${lt}: ${ln.organism_name?.slice(0,20)}... (${rank})`);
+      
+      if (!foundClass && rank === 'class') foundClass = ln.organism_name;
+      if (!foundOrder && rank === 'order') foundOrder = ln.order_name;
+      
+    } catch (e) {
+      console.warn(`  ${lt}: timeout`);
+      continue;
     }
-
-    if (foundClass && foundOrder) break;
   }
 
   out.class = foundClass;
