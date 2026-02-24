@@ -1,5 +1,4 @@
 ## Status
-
 [![Build & Deploy](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml)
 [![Parse Reviewed Entries](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parse-reviewed.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parse-reviewed.yml)
 
