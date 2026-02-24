@@ -119,30 +119,43 @@ async function enrichTaxonomy(taxid) {
   const lineageIds = Array.isArray(node.lineage) ? node.lineage : [];
   let foundClass = null;
   let foundOrder = null;
+  
+  console.log(`  Lineage length: ${lineageIds.length} nodes to process`);
 
-  // TRAVERSE FULL LINEAGE (root→species) - NO EARLY EXIT
-  console.log(`  Lineage length: ${lineageIds.length}`);
-  for (let i = lineageIds.length - 2; i >= 0; i--) {  // Skip species itself (last index)
+  // Process EVERY SINGLE lineage node (no skipping!)
+  for (let i = lineageIds.length - 2; i >= 0; i--) {
     const lt = lineageIds[i];
-    if (lt < 10) continue; // Skip root
     
+    if (lt < 10) {
+      console.log(`  ${lt}: SKIPPED (root)`);
+      continue;
+    }
+    
+    console.log(`  [${i}] Checking ${lt}...`);
+    
+    let ln;
     try {
-      const ln = await fetchTaxonMinimal(lt);
-      if (!ln) continue;
-      
-      const rank = (ln.rank || '').toLowerCase();
-      console.log(`  ${lt}: ${ln.organism_name?.slice(0,20)}... (${rank})`);
-      
-      if (!foundClass && rank === 'class') {
-        foundClass = ln.organism_name;
-        console.log(`✅ CLASS FOUND: ${foundClass}`);
-      }
-      if (!foundOrder && rank === 'order') {
-        foundOrder = ln.organism_name;
-        console.log(`✅ ORDER FOUND: ${foundOrder}`);
-      }
+      ln = await fetchTaxonMinimal(lt);
     } catch (e) {
-      console.warn(`  ${lt}: timeout`);
+      console.log(`  ${lt}: API ERROR - ${e.message}`);
+      continue;
+    }
+    
+    if (!ln) {
+      console.log(`  ${lt}: NO DATA`);
+      continue;
+    }
+    
+    const rank = (ln.rank || '').toLowerCase();
+    console.log(`  ${lt}: ${ln.organism_name?.slice(0,20)}... (${rank})`);
+    
+    if (rank === 'class') {
+      foundClass = ln.organism_name;
+      console.log(`✅ CLASS: ${foundClass}`);
+    }
+    if (rank === 'order') {
+      foundOrder = ln.organism_name;
+      console.log(`✅ ORDER: ${foundOrder}`);
     }
   }
 
