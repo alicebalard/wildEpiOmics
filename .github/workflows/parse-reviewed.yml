@@ -32,27 +32,27 @@ jobs:
               yamlContent = yamlMatch[1];
             } else {
               const H = (label) =>
-                new RegExp(`###\\s*${label}\\s*[\\r\\n]+([^\\r\\n]+)`, "i");
+                new RegExp(`###\\s*${label}\\s*[\r\n]+([^ \r\n][^ \r\n]*)`, "i");
 
-              const doiRaw = (body.match(H("(?:article\\s+DOI|DOI)")) || [])[1] || "";
-              const doi = doiRaw.replace(/^https?:\\/\\/(dx\\.)?doi\\.org\\//i, "").trim();
+              const doiRaw = (body.match(H("(?:article DOI|DOI)")) || [])[1] || "";
+              const doi = doiRaw.replace(/^https?:\/\/(dx\.)?doi\.org\//i, "").trim();
               
-              const taxid = (body.match(H("(?:NCBI\\s+Taxon\\s+ID|taxid)")) || [])[1];
+              const taxid = (body.match(H("(?:NCBI Taxon ID|taxid)")) || [])[1];
               
-              const individuals = (body.match(H("(?:individuals|number\\s+of\\s+sequenced\\s+individuals)")) || [])[1];
+              const individuals = (body.match(H("(?:individuals|number of sequenced individuals)")) || [])[1];
               
-              const data_url_raw = ((body.match(H("(?:URL\\s+of\\s+raw\\s+data|data_url)")) || [])[1] || "").trim();
-              const data_url = data_url_raw.replace(/\[.*?\]\((.*?)\)/, '$1').trim();
+              const data_url_raw = (body.match(H("(?:URL of raw data|data_url)")) || [])[1] || "";
+              const data_url = data_url_raw.replace(/\[.*?\]\((.*?)\)/, '$1').replace(/\s*\[[^\]]*\]\s*/, '').trim();
               
-              const tissue = ((body.match(H("(?:tissue\\s+sampled|tissue)")) || [])[1] || "").trim();
+              const tissue = (body.match(H("(?:tissue sampled|tissue)")) || [])[1] || "";
               
-              const method = ((body.match(H("method")) || [])[1] || "").trim();
+              const method = (body.match(H("method")) || [])[1] || "";
               
-              const image_url_raw = ((body.match(H("(?:Image\\s+URL|image_url)")) || [])[1] || "").trim();
-              const image_url = image_url_raw.replace(/\[.*?\]\((.*?)\)/, '$1').trim();
+              const image_url_raw = (body.match(H("(?:Image URL|image_url)")) || [])[1] || "";
+              const image_url = image_url_raw.replace(/\[.*?\]\((.*?)\)/, '$1').replace(/\s*\[[^\]]*\]\s*/, '').trim();
               
-              const notesMatch = body.match(/###\s*main\s+question\(s\)\s+of\s+the\s+study\s*[\r\n]+([\s\S]*?)(?=###\s|\s*$)/i);
-              const notes = notesMatch ? notesMatch[1].trim() : "";
+              const notesMatch = body.match(/###\s*main question\(s\) of the study\s*[\r\n]+([\s\S]*?)(?=###\s|\s*$)/i);
+              const notes = notesMatch ? notesMatch[1].replace(/^\s+|\s+$/g, '') : "";
 
               if (!taxid || !doi) {
                 await github.rest.issues.createComment({
@@ -66,11 +66,11 @@ jobs:
 
               yamlContent = `doi: ${doi}\ntaxid: ${taxid}`;
               if (individuals) yamlContent += `\nindividuals: ${individuals}`;
-              if (data_url)    yamlContent += `\ndata_url: ${data_url}`;
-              if (tissue)      yamlContent += `\ntissue: ${tissue}`;
-              if (method)      yamlContent += `\nmethod: ${method}`;
-              if (image_url)   yamlContent += `\nimage: ${image_url}`;
-              if (notes)       yamlContent += `\nnotes:\n ${notes.replace(/\n/g, '\n ')}`;
+              if (data_url) yamlContent += `\ndata_url: ${data_url}`;
+              if (tissue) yamlContent += `\ntissue: ${tissue}`;
+              if (method) yamlContent += `\nmethod: ${method}`;
+              if (image_url) yamlContent += `\nimage: ${image_url}`;
+              if (notes) yamlContent += `\nnotes: |\n  ${notes.split('\n').map(line => '  ' + line.trim()).join('\n')}`;
             }
 
             const tax = (yamlContent.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
@@ -79,12 +79,8 @@ jobs:
             if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
 
             fs.writeFileSync(filename, yamlContent);
-
             core.setOutput("filename", filename);
 
-      # --------------------------
-      # REAL git operations
-      # --------------------------
       - name: Commit YAML file
         run: |
           git config user.name "github-actions[bot]"
