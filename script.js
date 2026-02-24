@@ -79,12 +79,17 @@ function render() {
 
     // ---- IMAGE ----
 if (e.image) {
+  // Clean markdown links: [text](url) → url
+  let cleanImageUrl = e.image;
+  const urlMatch = e.image.match(/\[.*?\]\((.*?)\)/);
+  if (urlMatch) cleanImageUrl = urlMatch[1];
+  
   const imgContainer = document.createElement('div');
   imgContainer.className = 'image-container';
   
   const img = document.createElement('img');
-  img.src = e.image;
-  img.alt = `${e.common_name || e.species} (${e.image_credit || ''})`;
+  img.src = cleanImageUrl;
+  img.alt = e.common_name || e.species || 'Species image';
   img.className = 'species-image';
   imgContainer.appendChild(img);
   
