@@ -115,7 +115,7 @@ async function fetchTaxonMinimal(taxid) {
 }
 
 async function enrichTaxonomy(taxid) {
-  const out = { species: null, order: null, class: null, common_name: null, image: null };
+  const out = { species: null, order: null, class: null, common_name: null };
 
   const node = await fetchTaxonMinimal(taxid);
   if (!node) return out;
