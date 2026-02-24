@@ -70,8 +70,8 @@ body:
       placeholder: "https://example.org/path/to/image.jpg"
     validations:
       required: false
-
-   - type: input
+      
+  - type: input
     id: image_credit
     attributes:
       label: Image credit
