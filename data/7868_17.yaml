@@ -4,7 +4,7 @@ individuals: 2
 data_url: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE96683
 tissue: pancreas
 method: WGBS
-image: own work CC BY-NC
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Elephant_shark_melb_aquarium.jpg/1280px-Elephant_shark_melb_aquarium.jpg
 image_credit: "Alison Copeland, CC BY 4.0"
 notes: |
     genome-wide methylation; Functional relevance of DNA methylation; Evolutionary conservation of methylation patterns
