@@ -20,7 +20,6 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const exec = require('@actions/exec'); // ✅ ensure git commands work
             const issue = context.payload.issue;
             const body = issue.body || '';
             // Prefer fenced YAML if the user pasted it explicitly
@@ -65,11 +64,11 @@ jobs:
             if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
             fs.writeFileSync(filename, yamlContent);
             
-            await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
-            await exec.exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
-            await exec.exec('git', ['add', filename]);
-            await exec.exec('git', ['commit', '-m', `Add entry from Issue #${issue.number}`]);
-            await exec.exec('git', ['push']);
+            await exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
+            await exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
+            await exec('git', ['add', filename]);
+            await exec('git', ['commit', '-m', `Add entry from Issue #${issue.number}`]);
+            await exec('git', ['push']);
             
             await github.rest.issues.createComment({
             owner: context.repo.owner,
