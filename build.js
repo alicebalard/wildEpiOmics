@@ -90,27 +90,20 @@ function httpGetJson(url, options = {}) {
 }
 
 // --------------------------------------------------------------
-// NCBI TAXONOMY - MINIMAL API CALLS (works despite rate limits)
+// NCBI TAXONOMY - NO CACHE VERSION (force fresh every time)
 // --------------------------------------------------------------
-
-const taxonomyCache = new Map();
-
 async function fetchTaxonMinimal(taxid) {
-  if (taxonomyCache.has(taxid)) return taxonomyCache.get(taxid);
-  
+  // NO IN-MEMORY CACHE - always fresh API call
   try {
     const url = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
     const { status, json } = await httpGetJson(url);
     
     if (status === 200) {
-      const node = json?.taxonomy_nodes?.[0]?.taxonomy || null;
-      taxonomyCache.set(taxid, node);
-      return node;
+      return json?.taxonomy_nodes?.[0]?.taxonomy || null;
     }
   } catch (e) {
     console.warn(`❌ ${taxid} failed`);
   }
-  
   return null;
 }
 
@@ -120,34 +113,33 @@ async function enrichTaxonomy(taxid) {
   const node = await fetchTaxonMinimal(taxid);
   if (!node) return out;
 
+  console.log(`🔍 Fetching lineage for ${taxid}...`);
   out.species = node.organism_name || null;
   out.common_name = node.genbank_common_name || node.common_name || null;
 
   const lineageIds = Array.isArray(node.lineage) ? node.lineage : [];
-
   let foundClass = null;
   let foundOrder = null;
 
-  // Walk from the *end* (closest to species) towards the root
   for (let i = lineageIds.length - 1; i >= 0; i--) {
     const lt = lineageIds[i];
     const ln = await fetchTaxonMinimal(lt);
     if (!ln) continue;
 
     const rank = (ln.rank || '').toLowerCase();
+    console.log(`  ${lt}: ${ln.organism_name} (${rank})`);
+    
     if (!foundClass && rank === 'class') {
-      foundClass = ln.organism_name || null;
+      foundClass = ln.organism_name;
     } else if (!foundOrder && rank === 'order') {
-      foundOrder = ln.organism_name || null;
+      foundOrder = ln.organism_name;
     }
 
-    // Early stop if we have both
     if (foundClass && foundOrder) break;
   }
 
   out.class = foundClass;
   out.order = foundOrder;
-
   return out;
 }
 
@@ -215,37 +207,10 @@ console.log("🔨 Building site...");
 // 1. Load YAML entries
 const data = readAllData();
 
-// Load/save taxonomy cache
-const TAX_CACHE = path.join(ROOT, 'cache', 'taxonomy.json');
-ensureDir(path.dirname(TAX_CACHE));
-
-let cache = {};
-if (fs.existsSync(TAX_CACHE)) {
-    cache = JSON.parse(fs.readFileSync(TAX_CACHE, 'utf8'));
-}
-
-async function getCachedTaxonomy(taxid) {
-    if (cache[taxid]) {
-        console.log(`📦 Cache hit: ${taxid}`);
-        return cache[taxid];
-    }
-    
-    const result = await enrichTaxonomy(taxid);
-    cache[taxid] = result;
-    fs.writeFileSync(TAX_CACHE, JSON.stringify(cache, null, 2));
-    return result;
-}
-
-// Enrich entries with taxonomy (single pass)
-console.log("🧬 Enriching taxonomy…");
-// FORCE FRESH TAXONOMY - clear old cache
-console.log("🔄 Clearing taxonomy cache...");
-cache = {};  // Reset entire cache
-fs.writeFileSync(TAX_CACHE, '{}');  // Write empty cache
-
+console.log("🧬 Enriching taxonomy (NO CACHE)...");
 for (const entry of data) {
     if (entry.taxid) {
-        const extra = await getCachedTaxonomy(entry.taxid);  // Uses cache!
+        const extra = await enrichTaxonomy(entry.taxid);  // Direct call!
         Object.assign(entry, extra);
     }
 }
