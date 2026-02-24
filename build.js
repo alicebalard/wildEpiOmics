@@ -116,15 +116,15 @@ async function enrichTaxonomy(taxid) {
   out.species = node.organism_name || null;
   out.common_name = node.genbank_common_name || node.common_name || null;
 
-  // FIXED: Use FULL lineage (root→species), search from end
   const lineageIds = Array.isArray(node.lineage) ? node.lineage : [];
   let foundClass = null;
   let foundOrder = null;
 
-  // Walk lineage BACKWARDS (species → root)
-  for (let i = lineageIds.length - 2; i >= 0; i--) {  // Skip species itself
+  // TRAVERSE FULL LINEAGE (root→species) - NO EARLY EXIT
+  console.log(`  Lineage length: ${lineageIds.length}`);
+  for (let i = lineageIds.length - 2; i >= 0; i--) {  // Skip species itself (last index)
     const lt = lineageIds[i];
-    if (lt < 10) continue;
+    if (lt < 10) continue; // Skip root
     
     try {
       const ln = await fetchTaxonMinimal(lt);
@@ -141,9 +141,6 @@ async function enrichTaxonomy(taxid) {
         foundOrder = ln.organism_name;
         console.log(`✅ ORDER FOUND: ${foundOrder}`);
       }
-      
-      // Stop when both found
-      if (foundClass && foundOrder) break;
     } catch (e) {
       console.warn(`  ${lt}: timeout`);
     }
