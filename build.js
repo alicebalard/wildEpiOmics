@@ -118,45 +118,35 @@ async function enrichTaxonomy(taxid) {
   const out = { species: null, order: null, class: null, common_name: null, image: null };
 
   const node = await fetchTaxonMinimal(taxid);
-  console.log(`FULL NODE FOR ${taxid}:`, JSON.stringify(node, null, 2));
-
   if (!node) return out;
 
-  // scientific name + common name
   out.species = node.organism_name || null;
   out.common_name = node.genbank_common_name || node.common_name || null;
 
-  // Try to use lineage if present
-  let lineage = [];
+  const lineageIds = Array.isArray(node.lineage) ? node.lineage : [];
 
-  // Datasets v2 usually provides an array under `lineage`
-  if (Array.isArray(node.lineage)) {
-    lineage = node.lineage.map(x => ({
-      name: x.organism_name || x.scientific_name || "",
-      rank: (x.rank || "").toLowerCase(),
-    }));
-  } else {
-    // helpful debug: you’ll see this once in your build logs if lineage is missing
-    console.warn(`No lineage array for taxid ${taxid}`);
+  let foundClass = null;
+  let foundOrder = null;
+
+  // Walk from the *end* (closest to species) towards the root
+  for (let i = lineageIds.length - 1; i >= 0; i--) {
+    const lt = lineageIds[i];
+    const ln = await fetchTaxonMinimal(lt);
+    if (!ln) continue;
+
+    const rank = (ln.rank || '').toLowerCase();
+    if (!foundClass && rank === 'class') {
+      foundClass = ln.organism_name || null;
+    } else if (!foundOrder && rank === 'order') {
+      foundOrder = ln.organism_name || null;
+    }
+
+    // Early stop if we have both
+    if (foundClass && foundOrder) break;
   }
 
-  // Also include the node itself as a last resort
-  lineage.push({
-    name: node.organism_name || "",
-    rank: (node.rank || "").toLowerCase(),
-  });
-
-  const findRank = (rankName) =>
-    lineage.find(x => x.rank === rankName)?.name || null;
-
-  out.class = findRank("class");
-  out.order = findRank("order");
-
-  // If species was not set from the main node, try lineage rank "species"
-  if (!out.species) {
-    const speciesName = findRank("species");
-    if (speciesName) out.species = speciesName;
-  }
+  out.class = foundClass;
+  out.order = foundOrder;
 
   return out;
 }
