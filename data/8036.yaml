@@ -1,0 +1,10 @@
+doi: 10.1111/mec.16620
+taxid: 8036
+individuals: 48
+data_url: https://www.ebi.ac.uk/ena/browser/view/ERP129674
+tissue: embryo
+method: RRBS
+image: https://upload.wikimedia.org/wikipedia/commons/f/f2/Salvelinus_alpinus_311639131.jpg
+image_credit: "Alison Copeland, CC BY 4.0"
+notes: |
+    genome-wide methylation variation;  methylation divergence between groups; DMRs identification; Functional relevance of DNA methylation
