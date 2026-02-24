@@ -50,7 +50,12 @@ jobs:
               
               const image_url_raw = (body.match(H("(?:Image URL|image_url)")) || [])[1] || "";
               const image_url = image_url_raw.replace(/\[.*?\]\((.*?)\)/, '$1').replace(/\s*\[[^\]]*\]\s*/, '').trim();
+
+              const image_credit_raw = (body.match(H("(?:Image Credit|image_credit)")) || [])[1] || "";
+              const image_credit = image_credit_raw.replace(/\[.*?\]\((.*?)\)/, '$1').trim();
               
+              if (image_credit) yamlContent += `\nimage_credit: "${image_credit}"`;
+
               const notesMatch = body.match(/###\s*main question\(s\) of the study\s*[\r\n]+([\s\S]*?)(?=###\s|\s*$)/i);
               const notes = notesMatch ? notesMatch[1].replace(/^\s+|\s+$/g, '') : "";
 
