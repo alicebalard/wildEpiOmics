@@ -138,8 +138,7 @@ async function enrichTaxonomy(taxid) {
       console.log(`  ${lt}: ${ln.organism_name?.slice(0,20)}... (${rank})`);
       
       if (!foundClass && rank === 'class') foundClass = ln.organism_name;
-      if (!foundOrder && rank === 'order') foundOrder = ln.order_name;
-      
+		if (!foundOrder && rank === 'order') foundOrder = ln.organism_name;       
     } catch (e) {
       console.warn(`  ${lt}: timeout`);
       continue;
