@@ -118,35 +118,41 @@ async function enrichTaxonomy(taxid) {
   const out = { species: null, order: null, class: null, common_name: null, image: null };
 
   const node = await fetchTaxonMinimal(taxid);
+  console.log(`Lineage for ${taxid}:`, JSON.stringify(node.lineage, null, 2));
+
   if (!node) return out;
 
   // scientific name + common name
   out.species = node.organism_name || null;
   out.common_name = node.genbank_common_name || node.common_name || null;
 
-  // build a simple lineage array from NCBI payload
-  // each item has { name, rank }
-  const lineage = Array.isArray(node.lineage)
-    ? node.lineage.map(x => ({
-        name: x.organism_name || "",
-        rank: (x.rank || "").toLowerCase(),
-      }))
-    : [];
+  // Try to use lineage if present
+  let lineage = [];
 
-  // Also treat the node itself as part of lineage for safety
+  // Datasets v2 usually provides an array under `lineage`
+  if (Array.isArray(node.lineage)) {
+    lineage = node.lineage.map(x => ({
+      name: x.organism_name || x.scientific_name || "",
+      rank: (x.rank || "").toLowerCase(),
+    }));
+  } else {
+    // helpful debug: you’ll see this once in your build logs if lineage is missing
+    console.warn(`No lineage array for taxid ${taxid}`);
+  }
+
+  // Also include the node itself as a last resort
   lineage.push({
     name: node.organism_name || "",
     rank: (node.rank || "").toLowerCase(),
   });
 
-  // helper to pick the first node with a given rank
   const findRank = (rankName) =>
     lineage.find(x => x.rank === rankName)?.name || null;
 
   out.class = findRank("class");
   out.order = findRank("order");
 
-  // If species is missing or rank was not "species", but lineage has a species node
+  // If species was not set from the main node, try lineage rank "species"
   if (!out.species) {
     const speciesName = findRank("species");
     if (speciesName) out.species = speciesName;
