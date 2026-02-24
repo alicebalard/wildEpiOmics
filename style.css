@@ -29,7 +29,7 @@ body { margin: 0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sa
   .filters { border-right: none; border-bottom: 1px solid var(--border); }
 }
 .species-image {
-  width: 100%;
+  width: 50%;
   border-radius: 8px;
   object-fit: cover;
   height: 200px;
