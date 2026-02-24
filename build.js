@@ -238,6 +238,11 @@ async function getCachedTaxonomy(taxid) {
 
 // Enrich entries with taxonomy (single pass)
 console.log("🧬 Enriching taxonomy…");
+// FORCE FRESH TAXONOMY - clear old cache
+console.log("🔄 Clearing taxonomy cache...");
+cache = {};  // Reset entire cache
+fs.writeFileSync(TAX_CACHE, '{}');  // Write empty cache
+
 for (const entry of data) {
     if (entry.taxid) {
         const extra = await getCachedTaxonomy(entry.taxid);  // Uses cache!
