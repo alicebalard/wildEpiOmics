@@ -75,6 +75,7 @@ jobs:
               if (tissue) yamlContent += `\ntissue: ${tissue}`;
               if (method) yamlContent += `\nmethod: ${method}`;
               if (image_url) yamlContent += `\nimage: ${image_url}`;
+              if (image_credit) yamlContent += `\nimage_credit: "${image_credit}"`;
               if (notes) yamlContent += `\nnotes: |\n  ${notes.split('\n').map(line => '  ' + line.trim()).join('\n')}`;
             }
 
