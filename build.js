@@ -109,58 +109,43 @@ async function fetchTaxonMinimal(taxid) {
 
 async function enrichTaxonomy(taxid) {
   const out = { species: null, order: null, class: null, common_name: null };
-  
-  console.log(`🔍 RAW API CALL for ${taxid}`);
   const node = await fetchTaxonMinimal(taxid);
-  console.log(`RAW NODE:`, JSON.stringify(node, null, 2));
-  
-  if (!node) {
-    console.log(`❌ NO NODE RETURNED for ${taxid}`);
-    return out;
-  }
+  if (!node) return out;
 
   console.log(`🔍 Processing ${taxid} (${node.organism_name})`);
   out.species = node.organism_name || null;
   out.common_name = node.genbank_common_name || node.common_name || null;
 
+  // FIXED: Use FULL lineage (root→species), search from end
+  const lineageIds = Array.isArray(node.lineage) ? node.lineage : [];
   let foundClass = null;
   let foundOrder = null;
 
-  // PARENT WALKUP: Start from species, go up
-  let current = taxid;
-  for (let i = 0; i < 20 && (!foundClass || !foundOrder); i++) {
-    console.log(`\n--- Level ${i}: current=${current}`);
+  // Walk lineage BACKWARDS (species → root)
+  for (let i = lineageIds.length - 2; i >= 0; i--) {  // Skip species itself
+    const lt = lineageIds[i];
+    if (lt < 10) continue;
     
-    const currentNode = await fetchTaxonMinimal(current);
-    console.log(`PARENT LOOKUP:`, JSON.stringify(currentNode?.parent_taxonomy_id, null, 2));
-    
-    if (!currentNode || !currentNode.parent_taxonomy_id) {
-      console.log(`❌ NO PARENT at ${current}`);
-      break;
-    }
-    
-    current = currentNode.parent_taxonomy_id;
-    if (current < 10) {
-      console.log(`❌ ROOT REACHED`);
-      break;
-    }
-    
-    const ln = await fetchTaxonMinimal(current);
-    if (!ln) {
-      console.log(`❌ NO NODE at ${current}`);
-      continue;
-    }
-    
-    const rank = (ln.rank || '').toLowerCase();
-    console.log(`  ${current}: ${ln.organism_name?.slice(0,20)}... (${rank})`);
-    
-    if (!foundClass && rank === 'class') {
-      foundClass = ln.organism_name;
-      console.log(`✅ CLASS FOUND: ${foundClass}`);
-    }
-    if (!foundOrder && rank === 'order') {
-      foundOrder = ln.organism_name;
-      console.log(`✅ ORDER FOUND: ${foundOrder}`);
+    try {
+      const ln = await fetchTaxonMinimal(lt);
+      if (!ln) continue;
+      
+      const rank = (ln.rank || '').toLowerCase();
+      console.log(`  ${lt}: ${ln.organism_name?.slice(0,20)}... (${rank})`);
+      
+      if (!foundClass && rank === 'class') {
+        foundClass = ln.organism_name;
+        console.log(`✅ CLASS FOUND: ${foundClass}`);
+      }
+      if (!foundOrder && rank === 'order') {
+        foundOrder = ln.organism_name;
+        console.log(`✅ ORDER FOUND: ${foundOrder}`);
+      }
+      
+      // Stop when both found
+      if (foundClass && foundOrder) break;
+    } catch (e) {
+      console.warn(`  ${lt}: timeout`);
     }
   }
 
