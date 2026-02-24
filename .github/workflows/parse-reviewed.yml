@@ -65,7 +65,7 @@ jobs:
                 .trim();
 
               const notesMatch = body.match(
-                /###\s*main\s+question\(s\)\s+of\s+the\s+study\s*[\r\n]+([\s\S]*)$/i
+              /###\s*main\s+question\(s\)\s+of\s+the\s+study\s*[\r\n]+([\s\S]*?)(?=\n###\s|\n$)/i
               );
               const notes = notesMatch ? notesMatch[1].trim() : "";
 
