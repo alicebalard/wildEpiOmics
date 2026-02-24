@@ -116,25 +116,26 @@ async function enrichTaxonomy(taxid) {
   out.species = node.organism_name || null;
   out.common_name = node.genbank_common_name || node.common_name || null;
 
-  // FIXED: Get MORE lineage + NO early exit
-  const lineageIds = Array.isArray(node.lineage) ? node.lineage.slice(-20) : [];
-  
   let foundClass = null;
   let foundOrder = null;
 
-  // Process ALL lineage nodes (no early exit)
-  for (let i = lineageIds.length - 1; i >= 0; i--) {
-    const lt = lineageIds[i];
-    if (lt < 10) continue; // Skip root
+  // PARENT WALKUP: Guaranteed to find order/class by traversing up
+  let current = taxid;
+  for (let i = 0; i < 20 && (!foundClass || !foundOrder); i++) {
+    // Get current node to find parent
+    const currentNode = await fetchTaxonMinimal(current);
+    if (!currentNode || !currentNode.parent_taxonomy_id) break;
+    
+    current = currentNode.parent_taxonomy_id;
+    if (current < 10) break; // Skip root
     
     try {
-      const ln = await fetchTaxonMinimal(lt);
+      const ln = await fetchTaxonMinimal(current);
       if (!ln) continue;
       
       const rank = (ln.rank || '').toLowerCase();
-      console.log(`  ${lt}: ${ln.organism_name?.slice(0,20)}... (${rank})`);
+      console.log(`  ${current}: ${ln.organism_name?.slice(0,20)}... (${rank})`);
       
-      // FIXED: Use organism_name consistently
       if (!foundClass && rank === 'class') {
         foundClass = ln.organism_name;
         console.log(`✅ CLASS FOUND: ${foundClass}`);
@@ -144,7 +145,8 @@ async function enrichTaxonomy(taxid) {
         console.log(`✅ ORDER FOUND: ${foundOrder}`);
       }
     } catch (e) {
-      console.warn(`  ${lt}: timeout`);
+      console.warn(`  ${current}: timeout`);
+      continue;
     }
   }
 
