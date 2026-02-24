@@ -78,13 +78,26 @@ function render() {
     card.className = 'card';
 
     // ---- IMAGE ----
-    if (e.image) {
-      const img = document.createElement('img');
-      img.src = e.image;
-      img.alt = e.common_name || e.species || 'Species image';
-      img.className = 'species-image';
-      card.appendChild(img);
-    }
+if (e.image) {
+  const imgContainer = document.createElement('div');
+  imgContainer.className = 'image-container';
+  
+  const img = document.createElement('img');
+  img.src = e.image;
+  img.alt = `${e.common_name || e.species} (${e.image_credit || ''})`;
+  img.className = 'species-image';
+  imgContainer.appendChild(img);
+  
+  // ---- IMAGE CREDIT ----
+  if (e.image_credit) {
+    const credit = document.createElement('div');
+    credit.className = 'image-credit';
+    credit.textContent = e.image_credit;
+    imgContainer.appendChild(credit);
+  }
+  
+  card.appendChild(imgContainer);
+}
 
     // ---- HEADER ----
     const title = document.createElement('h3');
