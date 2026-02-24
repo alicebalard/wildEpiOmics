@@ -116,37 +116,41 @@ async function enrichTaxonomy(taxid) {
   out.species = node.organism_name || null;
   out.common_name = node.genbank_common_name || node.common_name || null;
 
-  // LIMIT: Only check LAST 10 lineage entries (faster)
-  const lineageIds = Array.isArray(node.lineage) ? node.lineage.slice(-10) : [];
+  // FIXED: Get MORE lineage + NO early exit
+  const lineageIds = Array.isArray(node.lineage) ? node.lineage.slice(-20) : [];
   
-  let foundClass = null, foundOrder = null;
-  for (let i = lineageIds.length - 1; i >= 0 && (!foundClass || !foundOrder); i--) {
+  let foundClass = null;
+  let foundOrder = null;
+
+  // Process ALL lineage nodes (no early exit)
+  for (let i = lineageIds.length - 1; i >= 0; i--) {
     const lt = lineageIds[i];
-    
-    // Skip root/noop nodes
-    if (lt < 10) continue;
+    if (lt < 10) continue; // Skip root
     
     try {
-      const ln = await Promise.race([
-        fetchTaxonMinimal(lt),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
-      ]);
-      
+      const ln = await fetchTaxonMinimal(lt);
       if (!ln) continue;
       
       const rank = (ln.rank || '').toLowerCase();
       console.log(`  ${lt}: ${ln.organism_name?.slice(0,20)}... (${rank})`);
       
-      if (!foundClass && rank === 'class') foundClass = ln.organism_name;
-		if (!foundOrder && rank === 'order') foundOrder = ln.organism_name;       
+      // FIXED: Use organism_name consistently
+      if (!foundClass && rank === 'class') {
+        foundClass = ln.organism_name;
+        console.log(`✅ CLASS FOUND: ${foundClass}`);
+      }
+      if (!foundOrder && rank === 'order') {
+        foundOrder = ln.organism_name;
+        console.log(`✅ ORDER FOUND: ${foundOrder}`);
+      }
     } catch (e) {
       console.warn(`  ${lt}: timeout`);
-      continue;
     }
   }
 
   out.class = foundClass;
   out.order = foundOrder;
+  console.log(`🎯 FINAL: order="${out.order}", class="${out.class}"`);
   return out;
 }
 
