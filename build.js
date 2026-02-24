@@ -118,7 +118,7 @@ async function enrichTaxonomy(taxid) {
   const out = { species: null, order: null, class: null, common_name: null, image: null };
 
   const node = await fetchTaxonMinimal(taxid);
-  console.log(`Lineage for ${taxid}:`, JSON.stringify(node.lineage, null, 2));
+  console.log(`FULL NODE FOR ${taxid}:`, JSON.stringify(node, null, 2));
 
   if (!node) return out;
 
