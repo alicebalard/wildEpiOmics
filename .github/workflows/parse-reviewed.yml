@@ -22,67 +22,124 @@ jobs:
             const fs = require('fs');
             const issue = context.payload.issue;
             const body = issue.body || '';
-            // Prefer fenced YAML if the user pasted it explicitly
+
+            //----------------------------------------------------------
+            // 1. YAML fenced block takes priority
+            //----------------------------------------------------------
             let yamlContent;
             const yamlMatch = body.match(/```ya?ml[\r\n]+([\s\S]*?)```/i);
             if (yamlMatch) {
-            yamlContent = yamlMatch[1];
+              yamlContent = yamlMatch[1];
             } else {
-            // ✅ Support GitHub Issue Form headings (value on the line after the heading)
-            const H = (label) => new RegExp(`###\\s*${label}\\s*[\\r\\n]+([^\\r\\n]+)`, 'i');
-            // DOI: accept "article DOI" (form) and "DOI" (legacy), strip doi.org prefix
-            const doiRaw = (body.match(H('(?:article\\s+DOI|DOI)')) || [])[1] || '';
-            const doi = doiRaw.replace(/^https?:\/\/(dx\\.)?doi\\.org\\//i, '').trim();
-            const taxid = (body.match(H('(?:NCBI\\s+Taxon\\s+ID|taxid)')) || [])[1];
-            const individuals = (body.match(H('(?:individuals|number\\s+of\\s+sequenced\\s+individuals)')) || [])[1];
-            const data_url = ((body.match(H('(?:URL\\s+of\\s+raw\\s+data|data_url)')) || [])[1] || '').trim();
-            const tissue = ((body.match(H('(?:tissue\\s+sampled|tissue)')) || [])[1] || '').trim();
-            const method = ((body.match(H('method')) || [])[1] || '').trim();
-            // Label in your form has no question mark → don't require it
-            const notesMatch = body.match(new RegExp(`###\\s*main\\s+question\\(s\\)\\s+of\\s+the\\s+study\\s*[\\r\\n]+([\\s\\S]*)$`, 'i'));
-            const notes = notesMatch ? notesMatch[1].trim() : '';
-            if (!taxid || !doi) {
+              //--------------------------------------------------------
+              // 2. Parse GitHub Issue Form headings
+              //--------------------------------------------------------
+              const H = (label) =>
+                new RegExp(`###\\s*${label}\\s*[\\r\\n]+([^\\r\\n]+)`, "i");
+
+              // DOI: accept "article DOI" (form) and "DOI" (legacy)
+              const doiRaw =
+                (body.match(H("(?:article\\s+DOI|DOI)")) || [])[1] || "";
+              const doi = doiRaw
+                .replace(/^https?:\/\/(dx\.)?doi\.org\//i, "")
+                .trim();
+
+              const taxid =
+                (body.match(H("(?:NCBI\\s+Taxon\\s+ID|taxid)")) || [])[1];
+
+              const individuals =
+                (body.match(
+                  H("(?:individuals|number\\s+of\\s+sequenced\\s+individuals)")
+                ) || [])[1];
+
+              const data_url =
+                ((body.match(H("(?:URL\\s+of\\s+raw\\s+data|data_url)")) ||
+                  [])[1] || "").trim();
+
+              const tissue =
+                ((body.match(H("(?:tissue\\s+sampled|tissue)")) || [])[1] ||
+                  "").trim();
+
+              const method =
+                ((body.match(H("method")) || [])[1] || "").trim();
+
+              // Notes (label has no question mark in your form)
+              const notesMatch = body.match(
+                /###\s*main\s+question\(s\)\s+of\s+the\s+study\s*[\r\n]+([\s\S]*)$/i
+              );
+              const notes = notesMatch ? notesMatch[1].trim() : "";
+
+              //--------------------------------------------------------
+              // 3. Validation
+              //--------------------------------------------------------
+              if (!taxid || !doi) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: "❌ Need ### DOI and ### NCBI Taxon ID",
+                });
+                return;
+              }
+
+              //--------------------------------------------------------
+              // 4. Construct YAML
+              //--------------------------------------------------------
+              yamlContent = `doi: ${doi}\ntaxid: ${taxid}`;
+              if (individuals) yamlContent += `\nindividuals: ${individuals}`;
+              if (data_url) yamlContent += `\ndata_url: ${data_url}`;
+              if (tissue) yamlContent += `\ntissue: ${tissue}`;
+              if (method) yamlContent += `\nmethod: ${method}`;
+              if (notes)
+                yamlContent += `\nnotes:\n ${notes.replace(/\n/g, "\n ")}`;
+            }
+
+            //----------------------------------------------------------
+            // 5. Save YAML file to data/
+            //----------------------------------------------------------
+            const tax = (yamlContent.match(/taxid:\s*(\d+)/i) || [])[1] || "entry";
+            const base = `data/${tax}`;
+            let filename = `${base}.yaml`;
+            if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
+
+            fs.writeFileSync(filename, yamlContent);
+
+            //----------------------------------------------------------
+            // 6. Commit + push
+            //----------------------------------------------------------
+            await exec("git", [
+              "config",
+              "--global",
+              "user.name",
+              "github-actions[bot]",
+            ]);
+            await exec("git", [
+              "config",
+              "--global",
+              "user.email",
+              "github-actions[bot]@users.noreply.github.com",
+            ]);
+            await exec("git", ["add", filename]);
+            await exec("git", ["commit", "-m", `Add entry from Issue #${issue.number}`]);
+            await exec("git", ["push"]);
+
+            //----------------------------------------------------------
+            // 7. Comment & close issue
+            //----------------------------------------------------------
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue.number,
-              body: '❌ Need ### DOI and ### NCBI Taxon ID'
+              body: `✅ **Saved!** \`${filename}\`\n[View file](./blob/main/${filename})`,
             });
-            return;
-            }
-            yamlContent = `doi: ${doi}\ntaxid: ${taxid}`;
-            if (individuals) yamlContent += `\nindividuals: ${individuals}`;
-            if (data_url) yamlContent += `\ndata_url: ${data_url}`;
-            if (tissue) yamlContent += `\ntissue: ${tissue}`;
-            if (method) yamlContent += `\nmethod: ${method}`;
-            if (notes) yamlContent += `\nnotes: \n ${notes.replace(/\n/g, '\n ')}`;
-            }
-            // Minor normalization for numbers if needed
-            const tax = (yamlContent.match(/taxid:\s*(\d+)/i) || [])[1] || 'entry';
-            const base = `data/${tax}`;
-            let filename = `${base}.yaml`;
-            if (fs.existsSync(filename)) filename = `${base}_${issue.number}.yaml`;
-            fs.writeFileSync(filename, yamlContent);
-            
-            await exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
-            await exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
-            await exec('git', ['add', filename]);
-            await exec('git', ['commit', '-m', `Add entry from Issue #${issue.number}`]);
-            await exec('git', ['push']);
-            
-            await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: issue.number,
-            body: `✅ **Saved!** \`${filename}\` [View](${context.repo.html_url}/blob/main/${filename})`
-            });
+
             await github.rest.issues.update({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: issue.number,
-            state: 'closed'
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              state: "closed",
             });
-            
+
       - name: Trigger deployment workflow
         uses: peter-evans/repository-dispatch@v3
         with:
