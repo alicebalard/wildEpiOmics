@@ -71,6 +71,15 @@ body:
     validations:
       required: false
 
+   - type: input
+    id: image_credit
+    attributes:
+      label: Image credit
+      description: "Author name + license, e.g. 'Alison Copeland, CC BY 4.0' (required if using image)"
+      placeholder: "Alison Copeland, CC BY 4.0"
+    validations:
+      required: false
+
   - type: textarea
     id: abstract
     attributes:
