@@ -61,15 +61,7 @@ body:
       placeholder: "10"
     validations:
       required: true
-
-  - type: textarea
-    id: abstract
-    attributes:
-      label: main question(s) of the study
-      placeholder: "..."
-    validations:
-      required: true
-
+  
   - type: input
     id: image_url
     attributes:
@@ -78,6 +70,14 @@ body:
       placeholder: "https://example.org/path/to/image.jpg"
     validations:
       required: false
+
+  - type: textarea
+    id: abstract
+    attributes:
+      label: main question(s) of the study
+      placeholder: "..."
+    validations:
+      required: true
       
   - type: markdown
     attributes:
