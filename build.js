@@ -98,7 +98,6 @@ const taxonomyCache = new Map();
 async function fetchTaxonMinimal(taxid) {
   if (taxonomyCache.has(taxid)) return taxonomyCache.get(taxid);
   
-  // SINGLE CALL ONLY - no retries during build!
   try {
     const url = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
     const { status, json } = await httpGetJson(url);
@@ -117,91 +116,42 @@ async function fetchTaxonMinimal(taxid) {
 
 async function enrichTaxonomy(taxid) {
   const out = { species: null, order: null, class: null, common_name: null, image: null };
-  
+
   const node = await fetchTaxonMinimal(taxid);
   if (!node) return out;
-  
-  out.species = node.organism_name;
-  out.common_name = node.genbank_common_name || node.common_name;
-  
-  // Remove debug logs for production
-  // console.log(`🔍 ${taxid} RAW DATA:`, { ... });
-  
-  // STRATEGY 1: Direct rank from main node
-  const mainRank = (node.rank || '').toLowerCase();
-  if (mainRank === 'class') out.class = node.organism_name;
-  if (mainRank === 'order') out.order = node.organism_name;
-  
-  // STRATEGY 2: Comprehensive species → vertebrate classification
-  const speciesLower = out.species?.toLowerCase() || '';
-  
-  // ================================
-  // MAMMALS (most comprehensive)
-  // ================================
-  if (speciesLower.match(/(baboon|papio|lynx|capreolus|equus|cavia|ailuropoda|mustela|crocuta|ursus|monodelphis|ornithorhynchus)/)) {
-    out.class = 'Mammalia';
-    if (speciesLower.includes('papio') || speciesLower.includes('baboon')) out.order = 'Primates';
-    else if (speciesLower.includes('lynx') || speciesLower.includes('mustela')) out.order = 'Carnivora';
-    else if (speciesLower.includes('equus')) out.order = 'Perissodactyla';
-    else if (speciesLower.includes('cavia')) out.order = 'Rodentia';
-    else if (speciesLower.includes('crocuta')) out.order = 'Carnivora';
-    else if (speciesLower.includes('ursus')) out.order = 'Carnivora';
+
+  // scientific name + common name
+  out.species = node.organism_name || null;
+  out.common_name = node.genbank_common_name || node.common_name || null;
+
+  // build a simple lineage array from NCBI payload
+  // each item has { name, rank }
+  const lineage = Array.isArray(node.lineage)
+    ? node.lineage.map(x => ({
+        name: x.organism_name || "",
+        rank: (x.rank || "").toLowerCase(),
+      }))
+    : [];
+
+  // Also treat the node itself as part of lineage for safety
+  lineage.push({
+    name: node.organism_name || "",
+    rank: (node.rank || "").toLowerCase(),
+  });
+
+  // helper to pick the first node with a given rank
+  const findRank = (rankName) =>
+    lineage.find(x => x.rank === rankName)?.name || null;
+
+  out.class = findRank("class");
+  out.order = findRank("order");
+
+  // If species is missing or rank was not "species", but lineage has a species node
+  if (!out.species) {
+    const speciesName = findRank("species");
+    if (speciesName) out.species = speciesName;
   }
-  
-  // ================================
-  // BIRDS  
-  // ================================
-  else if (speciesLower.match(/(phasianus|tachycineta|parus|corvus|passer)/)) {
-    out.class = 'Aves';
-    if (speciesLower.includes('phasianus')) out.order = 'Galliformes';
-    else if (speciesLower.includes('corvus')) out.order = 'Passeriformes';
-    else if (speciesLower.includes('parus') || speciesLower.includes('passer')) out.order = 'Passeriformes';
-  }
-  
-  // ================================
-  // REPTILES (turtles + lizards + crocodiles)
-  // ================================
-  else if (speciesLower.match(/(caretta|chrysemys|plestiodon|alligator|anolis)/)) {
-    out.class = 'Reptilia';
-    if (speciesLower.includes('caretta') || speciesLower.includes('chrysemys')) out.order = 'Testudines';
-    else if (speciesLower.includes('plestiodon')) out.order = 'Squamata';
-    else if (speciesLower.includes('alligator')) out.order = 'Crocodilia';
-    else if (speciesLower.includes('anolis')) out.order = 'Squamata';
-  }
-  
-  // ================================
-  // AMPHIBIANS
-  // ================================
-  else if (speciesLower.includes('rhinella') || speciesLower.includes('bufo')) {
-    out.class = 'Amphibia';
-    out.order = 'Anura';
-  }
-  
-  // ================================
-  // FISH (ray-finned + cartilaginous)
-  // ================================
-  else if (speciesLower.match(/(callorhinchus|rhinoptera|oncorhynchus|gasterosteus|gambusia|mallotus|salvelinus|salmo|melanogrammus)/)) {
-    if (speciesLower.match(/(callorhinchus|rhinoptera)/)) {
-      out.class = 'Chondrichthyes';  // Cartilaginous fish (sharks/rays)
-    } else {
-      out.class = 'Actinopterygii';  // Ray-finned fish
-    }
-    
-    if (speciesLower.includes('gasterosteus')) out.order = 'Perciformes';
-    else if (speciesLower.includes('oncorhynchus') || speciesLower.includes('salmo') || speciesLower.includes('salvelinus')) out.order = 'Salmoniformes';
-    else if (speciesLower.includes('melanogrammus')) out.order = 'Gadiformes';
-  }
-  
-  // STRATEGY 3: lineage_string fallback (if it exists in future)
-  if (node.lineage_string) {
-    const lineage = node.lineage_string.toLowerCase();
-    const classes = { 'actinopterygii': 'Actinopterygii', 'mammalia': 'Mammalia', 'reptilia': 'Reptilia', 'aves': 'Aves', 'amphibia': 'Amphibia', 'chondrichthyes': 'Chondrichthyes' };
-    const orders = { 'primates': 'Primates', 'testudines': 'Testudines', 'perciformes': 'Perciformes', 'salmoniformes': 'Salmoniformes', 'passeriformes': 'Passeriformes', 'carnivora': 'Carnivora', 'rodentia': 'Rodentia' };
-    
-    for (const [key, name] of Object.entries(classes)) if (lineage.includes(key)) { out.class = name; break; }
-    for (const [key, name] of Object.entries(orders)) if (lineage.includes(key)) { out.order = name; break; }
-  }
-  
+
   return out;
 }
 
@@ -290,20 +240,12 @@ async function getCachedTaxonomy(taxid) {
     return result;
 }
 
-// Then use it:
+// Enrich entries with taxonomy (single pass)
+console.log("🧬 Enriching taxonomy…");
 for (const entry of data) {
     if (entry.taxid) {
         const extra = await getCachedTaxonomy(entry.taxid);  // Uses cache!
         Object.assign(entry, extra);
-    }
-}
-
-// 2. Enrich with taxonomy
-console.log("🧬 Enriching taxonomy…");
-for (const entry of data) {
-    if (entry.taxid) {
-	const extra = await enrichTaxonomy(entry.taxid);
-	Object.assign(entry, extra);
     }
 }
 
