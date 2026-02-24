@@ -34,39 +34,24 @@ jobs:
               const H = (label) =>
                 new RegExp(`###\\s*${label}\\s*[\\r\\n]+([^\\r\\n]+)`, "i");
 
-              const doiRaw =
-                (body.match(H("(?:article\\s+DOI|DOI)")) || [])[1] || "";
-              const doi = doiRaw
-                .replace(/^https?:\/\/(dx\.)?doi\.org\//i, "")
-                .trim();
-
-              const taxid =
-                (body.match(H("(?:NCBI\\s+Taxon\\s+ID|taxid)")) || [])[1];
-
-              const individuals =
-                (body.match(
-                  H("(?:individuals|number\\s+of\\s+sequenced\\s+individuals)")
-                ) || [])[1];
-
-              const data_url =
-                ((body.match(H("(?:URL\\s+of\\s+raw\\s+data|data_url)")) ||
-                  [])[1] || "")
-                .trim();
-
-              const tissue =
-                ((body.match(H("(?:tissue\\s+sampled|tissue)")) || [])[1] || "")
-                .trim();
-
-              const method =
-                ((body.match(H("method")) || [])[1] || "").trim();
-
-              const image_url =
-                ((body.match(H("(?:Image\\\\s+URL|image_url)")) || [])[1] || "")
-                .trim();
-
-              const notesMatch = body.match(
-              /###\s*main\s+question\(s\)\s+of\s+the\s+study\s*[\r\n]+([\s\S]*?)(?=\n###\s|\n$)/i
-              );
+              const doiRaw = (body.match(H("(?:article\\s+DOI|DOI)")) || [])[1] || "";
+              const doi = doiRaw.replace(/^https?:\\/\\/(dx\\.)?doi\\.org\\//i, "").trim();
+              
+              const taxid = (body.match(H("(?:NCBI\\s+Taxon\\s+ID|taxid)")) || [])[1];
+              
+              const individuals = (body.match(H("(?:individuals|number\\s+of\\s+sequenced\\s+individuals)")) || [])[1];
+              
+              const data_url_raw = ((body.match(H("(?:URL\\s+of\\s+raw\\s+data|data_url)")) || [])[1] || "").trim();
+              const data_url = data_url_raw.replace(/\[.*?\]\((.*?)\)/, '$1').trim();
+              
+              const tissue = ((body.match(H("(?:tissue\\s+sampled|tissue)")) || [])[1] || "").trim();
+              
+              const method = ((body.match(H("method")) || [])[1] || "").trim();
+              
+              const image_url_raw = ((body.match(H("(?:Image\\s+URL|image_url)")) || [])[1] || "").trim();
+              const image_url = image_url_raw.replace(/\[.*?\]\((.*?)\)/, '$1').trim();
+              
+              const notesMatch = body.match(/###\s*main\s+question\(s\)\s+of\s+the\s+study\s*[\r\n]+([\s\S]*?)(?=###\s|\s*$)/i);
               const notes = notesMatch ? notesMatch[1].trim() : "";
 
               if (!taxid || !doi) {
