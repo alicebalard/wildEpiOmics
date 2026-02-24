@@ -60,6 +60,10 @@ jobs:
               const method =
                 ((body.match(H("method")) || [])[1] || "").trim();
 
+              const image_url =
+                ((body.match(H("(?:Image\\\\s+URL|image_url)")) || [])[1] || "")
+                .trim();
+
               const notesMatch = body.match(
                 /###\s*main\s+question\(s\)\s+of\s+the\s+study\s*[\r\n]+([\s\S]*)$/i
               );
@@ -80,6 +84,7 @@ jobs:
               if (data_url)    yamlContent += `\ndata_url: ${data_url}`;
               if (tissue)      yamlContent += `\ntissue: ${tissue}`;
               if (method)      yamlContent += `\nmethod: ${method}`;
+              if (image_url)   yamlContent += `\nimage: ${image_url}`;
               if (notes)       yamlContent += `\nnotes:\n ${notes.replace(/\n/g, '\n ')}`;
             }
 
