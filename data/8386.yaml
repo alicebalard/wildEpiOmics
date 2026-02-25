@@ -1,0 +1,10 @@
+doi: 10.1002/ece3.11127
+taxid: 8386
+individuals: 67
+data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=901184
+tissue: whole
+method: RRBS
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Canetoadfemale.jpg/1280px-Canetoadfemale.jpg
+image_credit: "Benjamint444, GFDL 1.2"
+notes: |
+    Environmental effect (early-life adversity) on DNA methylation; Functional relevance of DNA methylation.
