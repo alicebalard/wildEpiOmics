@@ -109,9 +109,9 @@ async function fetchTaxonMinimal(taxid, attempts = 3) {
   return null;
 }
 
-// --------------------------------------------------------------
-// ENRICHED TAXONOMY with NCBI + GBIF fallback
-// --------------------------------------------------------------
+// ---------------------------------
+// ENRICHED TAXONOMY with NCBI 
+// ---------------------------------
 // FIXED: Proper class position detection
 async function enrichTaxonomy(taxid) {
   const out = { species: null, order: null, class: null, common_name: null, source: "ncbi-heuristic" };
@@ -140,27 +140,16 @@ async function enrichTaxonomy(taxid) {
   // 1. EXACT RANK MATCHES first
   foundOrder = allLineageNodes.find(ln => (ln.rank || '').toLowerCase() === 'order')?.organism_name;
   foundClass = allLineageNodes.find(ln => (ln.rank || '').toLowerCase() === 'class')?.organism_name;
+	
+// Hardcoded for when NCBI doesn't find the correct class/order (to add manually as it goes):
+if (!foundClass && node.organism_name === 'Caretta caretta') {
+  foundClass = 'Reptilia';
+  console.log(`  ✅ MANUAL OVERRIDE: Reptilia (Caretta caretta)`);
+}
 
-  // 2. FIXED CLASS HEURISTIC: Find node 2-4 levels above order (typical class position)
-  if (!foundClass && foundOrder) {
-    const orderIndex = allLineageNodes.findIndex(ln => ln.organism_name === foundOrder);
-    
-    // Look 2-5 positions up from order (class is typically here)
-    for (let i = Math.max(0, orderIndex - 5); i < orderIndex && i >= 0; i--) {
-      const candidate = allLineageNodes[i];
-      const candidateRank = (candidate.rank || '').toLowerCase();
-      
-      // Accept superclass, class, subclass, or no rank (clade) at class position
-      if (['class', 'superclass', 'subclass', 'no rank'].includes(candidateRank)) {
-        foundClass = candidate.organism_name;
-        console.log(`  ✅ HEURISTIC CLASS: ${foundClass} (${candidateRank}, pos ${orderIndex-i})`);
-        break;
-      }
-    }
-  }
-
-  out.class = foundClass;
-  out.order = foundOrder;
+out.class = foundClass;
+out.order = foundOrder;
+	
   console.log(`🎯 FINAL: order="${out.order}", class="${out.class}" (${out.source})`);
   return out;
 }
