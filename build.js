@@ -92,17 +92,18 @@ function httpGetJson(url, options = {}) {
 // --------------------------------------------------------------
 // NCBI TAXONOMY - NO CACHE VERSION (force fresh every time)
 // --------------------------------------------------------------
-async function fetchTaxonMinimal(taxid) {
-  // NO IN-MEMORY CACHE - always fresh API call
-  try {
-    const url = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
-    const { status, json } = await httpGetJson(url);
-    
-    if (status === 200) {
-      return json?.taxonomy_nodes?.[0]?.taxonomy || null;
+async function fetchTaxonMinimal(taxid, attempts = 3) {
+  const url = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const { status, json } = await httpGetJson(url);
+      if (status === 200 && json?.taxonomy_nodes?.length) {
+        return json.taxonomy_nodes[0].taxonomy;
+      }
+    } catch (e) {
+      if (i === attempts - 1) throw e;
     }
-  } catch (e) {
-    console.warn(`❌ ${taxid} failed`);
+    await new Promise((r) => setTimeout(r, 500 * (i + 1))); // backoff
   }
   return null;
 }
