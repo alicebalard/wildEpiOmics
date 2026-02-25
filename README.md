@@ -24,4 +24,6 @@ Without a gihub account, send ALL the following information to alice.cam.balard@
 - URL of raw data (e.g. https://www.ncbi.nlm.nih.gov/sra/?term=SRP058411)
 - method (e.g. `RRBS, WGBS...)
 - number of sequenced individuals (e.g. 10, 15...)
-- Notes (optional)
+- main question of the study (optional)
+- link to a picture of the species (optional)
+- rights of the picture (optional)
