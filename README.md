@@ -1,4 +1,3 @@
-## Status
 [![Build & Deploy](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml)
 [![Parse Reviewed Entries](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parse-reviewed.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parse-reviewed.yml)
 
@@ -26,6 +25,3 @@ Without a gihub account, send ALL the following information to alice.cam.balard@
 - method (e.g. `RRBS, WGBS...)
 - number of sequenced individuals (e.g. 10, 15...)
 - Notes (optional)
-        
-## Notes for maintainer:
-- build.js has the combinations of genus/orders/class hardcoded, be careful if you add new genera to update this!
