@@ -110,47 +110,9 @@ async function fetchTaxonMinimal(taxid, attempts = 3) {
 }
 
 // --------------------------------------------------------------
-// GBIF Fallback API (ROBUST VERSION)
-// --------------------------------------------------------------
-async function fetchGBIFClassification(scientificName, attempts = 3) {
-  if (!scientificName?.trim()) {
-    console.log(`   ❌ GBIF: No scientific name provided`);
-    return null;
-  }
-  
-  const encodedName = encodeURIComponent(scientificName.trim());
-  const url = `https://api.gbif.org/v1/species/match?name=${encodedName}`;
-  
-  console.log(`   🔄 GBIF fallback → ${url}`);
-  
-  for (let i = 0; i < attempts; i++) {
-    try {
-      const { status, json } = await httpGetJson(url);
-      
-      console.log(`   📡 GBIF response: status=${status}, usage=${json?.usage?.key || 'none'}`);
-      
-      if (status === 200 && json?.usage?.key && json.classification?.length > 0) {
-        console.log(`   ✅ GBIF MATCHED: ${json.usage.canonicalName} (${json.classification.length} ranks)`);
-        return json.classification;
-      } else if (status !== 200) {
-        console.log(`   ❌ GBIF HTTP ${status}`);
-      } else {
-        console.log(`   ❌ GBIF no match/empty classification`);
-      }
-    } catch (e) {
-      console.log(`   ❌ GBIF ERROR ${i+1}/${attempts}: ${e.message}`);
-      if (i === attempts - 1) {
-        console.log(`   💡 TIP: Test manually: curl "https://api.gbif.org/v1/species/match?name=Caretta caretta"`);
-      }
-    }
-    if (i < attempts - 1) await new Promise((r) => setTimeout(r, 500 * (i + 1)));
-  }
-  return null;
-}
-
-// --------------------------------------------------------------
 // ENRICHED TAXONOMY with NCBI + GBIF fallback
 // --------------------------------------------------------------
+// FIXED: Proper class position detection
 async function enrichTaxonomy(taxid) {
   const out = { species: null, order: null, class: null, common_name: null, source: "ncbi-heuristic" };
   const node = await fetchTaxonMinimal(taxid);
@@ -165,53 +127,35 @@ async function enrichTaxonomy(taxid) {
   let foundOrder = null;
   const allLineageNodes = [];
 
-  // Collect ALL lineage nodes (your existing approach)
+  // Collect lineage (unchanged)
   for (let i = lineageIds.length - 2; i >= 0; i--) {
     const lt = lineageIds[i];
     if (lt < 10) continue;
-    
     try {
       const ln = await fetchTaxonMinimal(lt);
       if (ln) allLineageNodes.push(ln);
-    } catch (e) {
-      continue;
-    }
+    } catch (e) {}
   }
 
-  // 1. EXACT RANK MATCHES (works for Testudines ✓)
+  // 1. EXACT RANK MATCHES first
   foundOrder = allLineageNodes.find(ln => (ln.rank || '').toLowerCase() === 'order')?.organism_name;
   foundClass = allLineageNodes.find(ln => (ln.rank || '').toLowerCase() === 'class')?.organism_name;
 
-  // 2. HEURISTIC: Class is the HIGHEST node between phylum & order
+  // 2. FIXED CLASS HEURISTIC: Find node 2-4 levels above order (typical class position)
   if (!foundClass && foundOrder) {
-    // Find phylum-level and order-level nodes
-    const phylumNodes = allLineageNodes.filter(ln => (ln.rank || '').toLowerCase() === 'phylum');
-    const orderNodes = allLineageNodes.filter(ln => ln.organism_name === foundOrder);
+    const orderIndex = allLineageNodes.findIndex(ln => ln.organism_name === foundOrder);
     
-    if (phylumNodes.length > 0) {
-      // Class = highest node between phylum & species (excludes unranked clades)
-      const betweenPhylumAndOrder = allLineageNodes.filter(ln => 
-        ln.tax_id > phylumNodes[0].tax_id && 
-        allLineageNodes.findIndex(o => o.tax_id === ln.tax_id) < allLineageNodes.findIndex(o => o.organism_name === foundOrder)
-      );
+    // Look 2-5 positions up from order (class is typically here)
+    for (let i = Math.max(0, orderIndex - 5); i < orderIndex && i >= 0; i--) {
+      const candidate = allLineageNodes[i];
+      const candidateRank = (candidate.rank || '').toLowerCase();
       
-      // Use the HIGHEST (most inclusive) node as "class"
-      if (betweenPhylumAndOrder.length > 0) {
-        foundClass = betweenPhylumAndOrder[0].organism_name;  // Sauropsida
-        console.log(`  ✅ HEURISTIC CLASS: ${foundClass} (phylum→order gap)`);
+      // Accept superclass, class, subclass, or no rank (clade) at class position
+      if (['class', 'superclass', 'subclass', 'no rank'].includes(candidateRank)) {
+        foundClass = candidate.organism_name;
+        console.log(`  ✅ HEURISTIC CLASS: ${foundClass} (${candidateRank}, pos ${orderIndex-i})`);
+        break;
       }
-    }
-  }
-
-  // 3. SEMANTIC FALLBACK: Standard class names in any rank
-  if (!foundClass) {
-    const classCandidates = allLineageNodes.filter(ln => 
-      ['reptilia', 'aves', 'mammalia', 'amphibia', 'actinopterygii', 'chondrichthyes']
-      .some(candidate => ln.organism_name.toLowerCase().includes(candidate))
-    );
-    if (classCandidates.length > 0) {
-      foundClass = classCandidates[0].organism_name;
-      console.log(`  ✅ SEMANTIC CLASS: ${foundClass}`);
     }
   }
 
