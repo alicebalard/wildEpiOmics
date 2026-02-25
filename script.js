@@ -143,7 +143,7 @@ if (e.image) {
         <input type="checkbox" class="checkbox" data-doi="${e.doi}" ${selected.has(e.doi) ? 'checked' : ''}/>
         Select
       </label>
-      <a class="link" href="${doiHref}" target="_blank" rel="noopener">DOI</a>
+      <a class="link" href="${doiHref}" target="_blank" rel="noopener">article</a>
     `;
     if (dataHref) {
       links.innerHTML += `
