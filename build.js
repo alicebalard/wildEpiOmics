@@ -1,8 +1,7 @@
 /**
- * Full build.js for wildEpiOmics - UPDATED WITH GBIF Fallback
+ * Full build.js for wildEpiOmics
  * - Loads YAML study entries
  * - Enriches with NCBI taxonomy (species, order, class, common name, image)
- * - FALLBACK: If NCBI missing class/order → GBIF species match API
  * - Fetches BibTeX with Crossref + CSL-JSON fallback
  * - Writes public/bibtex.json
  * - Injects window.__DATA__ into template.html
@@ -90,9 +89,9 @@ function httpGetJson(url, options = {}) {
   });
 }
 
-// --------------------------------------------------------------
-// NCBI TAXONOMY (primary source)
-// --------------------------------------------------------------
+// -----------------
+// NCBI TAXONOMY 
+// -----------------
 async function fetchTaxonMinimal(taxid, attempts = 3) {
   const url = `https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon/${taxid}`;
   for (let i = 0; i < attempts; i++) {
@@ -112,7 +111,6 @@ async function fetchTaxonMinimal(taxid, attempts = 3) {
 // ---------------------------------
 // ENRICHED TAXONOMY with NCBI 
 // ---------------------------------
-// FIXED: Proper class position detection
 async function enrichTaxonomy(taxid) {
   const out = { species: null, order: null, class: null, common_name: null, source: "ncbi-heuristic" };
   const node = await fetchTaxonMinimal(taxid);
@@ -137,7 +135,7 @@ async function enrichTaxonomy(taxid) {
     } catch (e) {}
   }
 
-  // 1. EXACT RANK MATCHES first
+  // EXACT RANK MATCHES first
   foundOrder = allLineageNodes.find(ln => (ln.rank || '').toLowerCase() === 'order')?.organism_name;
   foundClass = allLineageNodes.find(ln => (ln.rank || '').toLowerCase() === 'class')?.organism_name;
 	
@@ -218,7 +216,7 @@ console.log("🔨 Building site...");
 // 1. Load YAML entries
 const data = readAllData();
 
-console.log("🧬 Enriching taxonomy (NCBI + GBIF fallback)...");
+console.log("🧬 Enriching taxonomy (NCBI)...");
 for (const entry of data) {
     if (entry.taxid) {
         const extra = await enrichTaxonomy(entry.taxid);
