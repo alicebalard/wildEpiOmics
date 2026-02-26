@@ -140,7 +140,7 @@ async function enrichTaxonomy(taxid) {
   foundClass = allLineageNodes.find(ln => (ln.rank || '').toLowerCase() === 'class')?.organism_name;
 	
 // Hardcoded for when NCBI doesn't find the correct class/order (to add manually as it goes):
-if (!foundClass && node.foundOrder === 'Testudines') {
+if (!foundClass && foundOrder === 'Testudines') {
   foundClass = 'Reptilia';
   console.log(`  ✅ MANUAL OVERRIDE`);
 }
