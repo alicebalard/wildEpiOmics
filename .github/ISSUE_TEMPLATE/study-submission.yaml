@@ -66,7 +66,7 @@ body:
     id: image_url
     attributes:
       label: Image URL
-      description: URL of a representative free image for this species (optional)
+      description: URL of a representative image for this species (optional; e.g. Wikipedia picture, right click, "copy image address")
       placeholder: "https://example.org/path/to/image.jpg"
     validations:
       required: false
