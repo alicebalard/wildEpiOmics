@@ -25,5 +25,5 @@ Without a gihub account, send ALL the following information to alice.cam.balard@
 - method (e.g. `RRBS, WGBS...)
 - number of sequenced individuals (e.g. 10, 15...)
 - main question of the study (optional)
-- link to a picture of the species (optional)
-- rights of the picture (optional)
+- link to a picture of the species (optional; e.g. Wikipedia picture, right click, "copy image address")
+- rights of the picture (optional, but needed if you upload a picture link)
