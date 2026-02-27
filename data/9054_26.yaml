@@ -1,0 +1,10 @@
+doi: 10.1016/j.avrs.2025.100234
+taxid: 9054
+individuals: 10
+data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=1071272
+tissue: muscle
+method: WGBS
+image: https://en.wikipedia.org/wiki/File:Phasianus_colchicus_-Rutland_Water_-female-8.jpg
+image_credit: "Andy Vernon, CC BY 2.0"
+notes: |
+    Methylation divergence between groups; development and validation of methylation-based discrimination panel
