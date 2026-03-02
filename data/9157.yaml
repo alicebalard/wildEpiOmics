@@ -1,0 +1,10 @@
+doi: 10.1080/15592294.2021.1943863
+taxid: 9157
+individuals: 28
+data_url: https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA589705
+tissue: blood
+method: RRBS
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Great_tit_%28Parus_major%29%2C_Parc_du_Rouge-Cloitre%2C_For%C3%AAt_de_Soignes%2C_Brussels_%2826194636951%29.jpg/1920px-Great_tit_%28Parus_major%29%2C_Parc_du_Rouge-Cloitre%2C_For%C3%AAt_de_Soignes%2C_Brussels_%2826194636951%29.jpg
+image_credit: "Frank Vassen, CC BY 2.0"
+notes: |
+    Environmental effect (pollution exposure) on DNA methylation; Genomic and functional characterization of DMRs.
