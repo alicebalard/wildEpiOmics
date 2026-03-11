@@ -1,0 +1,10 @@
+doi: 10.1111/mec.13436
+taxid: 9556
+individuals: 69
+data_url: https://www.ncbi.nlm.nih.gov/sra/?term=SRP058411
+tissue: Blood
+method: RRBS
+image: https://en.wikipedia.org/wiki/Yellow_baboon#/media/File:Papio_cynocephalus02.jpg
+image_credit: "Alexander Landfair, Public Domain"
+notes: |
+    Environmental effect (resource) on DNA methylation; temporal dynamics of DNA methylation
