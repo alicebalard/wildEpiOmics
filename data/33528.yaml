@@ -1,0 +1,10 @@
+doi: 10.1111/mec.17332
+taxid: 33528
+individuals: 12
+data_url: https://www.ncbi.nlm.nih.gov/sra/PRJNA991285
+tissue: muscle
+method: WGBS
+image: https://upload.wikimedia.org/wikipedia/commons/5/5c/Mosquitofish.jpg
+image_credit: "Public Domain"
+notes: |
+    Environmental effect (early-life adversity) on gene expression and methylation; Multi-omics overlap analysis.
