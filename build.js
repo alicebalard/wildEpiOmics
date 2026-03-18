@@ -144,7 +144,10 @@ if (!foundClass && foundOrder === 'Testudines') {
   foundClass = 'Reptilia';
   console.log(`  ✅ MANUAL OVERRIDE`);
 }
-
+if (!foundClass && foundOrder === 'Crocodylia') {
+  foundClass = 'Reptilia';
+  console.log(`  ✅ MANUAL OVERRIDE`);
+}
 out.class = foundClass;
 out.order = foundOrder;
 	
