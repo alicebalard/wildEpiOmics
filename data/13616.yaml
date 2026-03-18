@@ -2,7 +2,7 @@ doi: 10.1093/molbev/msx297
 taxid: 13616
 individuals: 4
 data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=356776
-tissue: Liver
+tissue: liver
 method: RRBS
 image: https://upload.wikimedia.org/wikipedia/commons/b/b5/Monodelphis_domestica.jpg
 image_credit: "Dawson, CC BY-SA 2.5"
