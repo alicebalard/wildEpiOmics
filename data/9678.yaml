@@ -1,0 +1,10 @@
+doi: 10.1038/s41467-021-24583-x
+taxid: 9678
+individuals: 29
+data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=740026
+tissue: Blood
+method: RRBS
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Spotted_hyena_%28Crocuta_crocuta%29.jpg/1920px-Spotted_hyena_%28Crocuta_crocuta%29.jpg
+image_credit: "Charles J. Sharp, CC BY-SA"
+notes: |
+    Environmental effect (early-life adversity) on DNA methylation; Functional relevance of DNA methylation
