@@ -1,0 +1,10 @@
+doi: 10.3389/fevo.2024.1504225
+taxid: 9644
+individuals: 12
+data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=1104803
+tissue: Blood,
+method: RRBS
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/2010-kodiak-bear-1.jpg/1920px-2010-kodiak-bear-1.jpg
+image_credit: "Yathin S Krishnappa, CC BY-SA 3.0"
+notes: |
+    Population-level epigenomic divergence; Tissue-specific epigenomic structuring; Functional relevance of methylation
