@@ -1,0 +1,10 @@
+doi: 10.3389/fgene.2022.995700
+taxid: 9646
+individuals: 6
+data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=857106
+tissue: Blood
+method: WGBS
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Grosser_Panda.JPG/1920px-Grosser_Panda.JPG
+image_credit: "J. Patrick Fischer, CC BY-SA 3.0"
+notes: |
+    comparison of methylation levels beween groups (captive Vs wild environment); Adaptive relevance of methylation; RNAseq associated are in another paper
