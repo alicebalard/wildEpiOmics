@@ -1,0 +1,10 @@
+doi: 10.1093/molbev/msx297
+taxid: 9258
+individuals: 4
+data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=356776
+tissue: Liver
+method: RRBS
+image: https://en.wikipedia.org/wiki/Platypus#/media/File:Duck-billed_platypus_(Ornithorhynchus_anatinus)_Scottsdale.jpg
+image_credit: "Charles J. Sharp CC BY-SA 4.0"
+notes: |
+    Methylation differences in sex chromosomes; comparison of methylation patterns beween sex.
