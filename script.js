@@ -6,6 +6,7 @@ const $fMethod = document.getElementById('f-method');
 const $fOrder = document.getElementById('f-order');
 const $fClass = document.getElementById('f-class');
 const $fTissue = document.getElementById('f-tissue');
+const $fCondition = document.getElementById('f-condition');
 const $fMinInd = document.getElementById('f-min-ind');
 const $fSpecies = document.getElementById('f-species');
 const $btnClear = document.getElementById('btn-clear');
@@ -25,16 +26,22 @@ function uniqueSorted(list) {
   return [...new Set(list.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
 
+function getConditions(e) {
+  return (e.condition || '').split(',').map(s => s.trim()).filter(Boolean);
+}
+
 function populateFilters() {
   const methods = uniqueSorted(entries.map(e => e.method));
   const orders = uniqueSorted(entries.map(e => e.order));
   const classes = uniqueSorted(entries.map(e => e.class));
   const tissues = uniqueSorted(entries.map(e => e.tissue));
+  const conditions = uniqueSorted(entries.flatMap(getConditions));
 
   for (const v of methods) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fMethod.appendChild(o); }
   for (const v of orders) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fOrder.appendChild(o); }
   for (const v of classes) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fClass.appendChild(o); }
   for (const v of tissues) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fTissue.appendChild(o); }
+  for (const v of conditions) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fCondition.appendChild(o); }
 }
 
 function getSelectedValues(sel) {
@@ -45,7 +52,8 @@ function applyFilters() {
   const fm = new Set(getSelectedValues($fMethod));
   const fo = new Set(getSelectedValues($fOrder));
   const fc = new Set(getSelectedValues($fClass));
-  const ft = new Set(getSelectedValues($fTissue));  
+  const ft = new Set(getSelectedValues($fTissue));
+  const fcond = new Set(getSelectedValues($fCondition));
   const minInd = parseInt($fMinInd.value) || 0;
   const speciesText = ($fSpecies.value || '').trim().toLowerCase();
 
@@ -54,6 +62,7 @@ function applyFilters() {
     if (fo.size && !fo.has(e.order)) return false;
     if (fc.size && !fc.has(e.class)) return false;
     if (ft.size && !ft.has(e.tissue)) return false;
+    if (fcond.size && !getConditions(e).some(c => fcond.has(c))) return false;
     if (minInd > 0 && (parseInt(e.individuals) || 0) < minInd) return false;
     if (speciesText && !(e.species || '').toLowerCase().includes(speciesText)) return false;
     
@@ -128,6 +137,7 @@ if (e.image) {
       <span><strong>Method:</strong> ${e.method}</span>
       <span><strong>N:</strong> ${e.individuals}</span>
       <span><strong>Tissue:</strong> ${e.tissue}</span>
+      ${e.condition ? `<span><strong>Condition:</strong> ${e.condition}</span>` : ''}
 
     `;
     card.appendChild(meta);
@@ -190,7 +200,8 @@ function clearFilters() {
   [...$fOrder.options].forEach(o => (o.selected = false));
   [...$fClass.options].forEach(o => (o.selected = false));
   [...$fTissue.options].forEach(o => (o.selected = false));
-  
+  [...$fCondition.options].forEach(o => (o.selected = false));
+
   // clear scalar inputs
   $fMinInd.value = '';
   $fSpecies.value = '';
@@ -218,6 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
   $fOrder.addEventListener('change', render);
   $fClass.addEventListener('change', render);
   $fTissue.addEventListener('change', render);
+  $fCondition.addEventListener('change', render);
   $btnClear.addEventListener('click', clearFilters);
   $fMinInd.addEventListener('input', render);
   $fSpecies.addEventListener('input', render);

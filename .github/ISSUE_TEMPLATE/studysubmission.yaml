@@ -52,7 +52,16 @@ body:
       placeholder: "RRBS"
     validations:
       required: true
-      
+
+  - type: input
+    id: condition
+    attributes:
+      label: condition(s) studied
+      description: Keyword(s) describing the condition(s) studied, comma-separated, e.g. `captivity, stress, disease exposure`
+      placeholder: "captivity, stress"
+    validations:
+      required: false
+
   - type: input
     id: individuals
     attributes:
