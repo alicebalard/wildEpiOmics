@@ -1,0 +1,10 @@
+doi: 10.1126/sciadv.aaz113
+taxid: 69293
+individuals: 46
+data_url: https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA591803
+tissue: gills
+method: RRBS
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Dreistachliger_Stichling_unterwasser.jpg/1280px-Dreistachliger_Stichling_unterwasser.jpg
+image_credit: "Lorenz Seebauer, CC BY-SA 4.0"
+notes: |
+    Inducible and noninducible epigenetic marks in response to varying salinity conditions
