@@ -1,0 +1,11 @@
+doi: 10.1093/molbev/msu344
+taxid: 69293
+individuals: 8
+data_url: https://www.ebi.ac.uk/ena/browser/view/PRJEB7912
+tissue: lateral
+method: RRBS
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Dreistachliger_Stichling_unterwasser.jpg/1280px-Dreistachliger_Stichling_unterwasser.jpg
+image_credit: "Lorenz Seebauer, CC BY-SA 4.0"
+notes: |
+    "DMRs identification; DNA methylation differences between groups;
+  Adaptive functional relevance of DMRs"
