@@ -1,57 +1,228 @@
-:root {
-  --bg: #fff;
-  --ink: #222;
-  --muted: #666;
-  --accent: #1867c0;
-  --border: #e6e6e6;
+// Client-side logic: filter UI + selection + BibTeX download
+let entries = window.__DATA__ || [];
+
+const $cards = document.getElementById('cards');
+const $fMethod = document.getElementById('f-method');
+const $fOrder = document.getElementById('f-order');
+const $fClass = document.getElementById('f-class');
+const $fTissue = document.getElementById('f-tissue');
+const $fMinInd = document.getElementById('f-min-ind');
+const $fSpecies = document.getElementById('f-species');
+const $btnClear = document.getElementById('btn-clear');
+const $btnBib = document.getElementById('btn-download-bib');
+const $selCount = document.getElementById('sel-count');
+
+let selected = new Set();
+
+async function loadBibMap() {
+  const res = await fetch('public/bibtex.json');
+  if (!res.ok) throw new Error('Failed to load bibtex map');
+  return res.json();
 }
-* { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); }
-.layout { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
-.filters { padding: 1rem; border-right: 1px solid var(--border); }
-.filters h2 { margin-top: 0; }
-.filters label { display: block; margin: .75rem 0; }
-.filters select { width: 100%; min-height: 6rem; }
-.filters input[type=text] { width: 100%; padding: .5rem; }
-.filters button { width: 100%; padding: .6rem .8rem; margin: .4rem 0; background: var(--accent); color: #fff; border: 0; border-radius: .25rem; cursor: pointer; }
-.filters button#btn-clear { background: #999; }
-.content { padding: 1rem 1.5rem; }
-#cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; align-items: start; }
-.card { border: 1px solid var(--border); border-radius: .5rem; padding: 1rem; background: #fff; display: flex; flex-direction: column; gap: .5rem; }
-.card h3 { margin: 0; font-size: 1.05rem; }
-.meta { font-size: .9rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: .6rem; }
-.meta span { background: #f7f7f7; padding: .2rem .4rem; border-radius: .25rem; }
-.actions { margin-top: .5rem; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
-.link { color: var(--accent); text-decoration: none; }
-.link:hover { text-decoration: underline; }
-@media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
-  .filters { border-right: none; border-bottom: 1px solid var(--border); }
+let bibMapPromise = loadBibMap();
+
+function uniqueSorted(list) {
+  return [...new Set(list.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
 
-.common-name {
-  font-size: 0.95rem;
-  color: var(--muted);
-  margin-top: -0.3rem;
-  margin-bottom: 0.5rem;
-  font-style: italic;
+function populateFilters() {
+  const methods = uniqueSorted(entries.map(e => e.method));
+  const orders = uniqueSorted(entries.map(e => e.order));
+  const classes = uniqueSorted(entries.map(e => e.class));
+  const tissues = uniqueSorted(entries.map(e => e.tissue));
+
+  for (const v of methods) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fMethod.appendChild(o); }
+  for (const v of orders) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fOrder.appendChild(o); }
+  for (const v of classes) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fClass.appendChild(o); }
+  for (const v of tissues) { const o = document.createElement('option'); o.value = v; o.textContent = v; $fTissue.appendChild(o); }
 }
 
-.image-container {
-  position: relative;
+function getSelectedValues(sel) {
+  return [...sel.options].filter(o => o.selected).map(o => o.value);
 }
 
-.species-image {
-  width: 100%;
-  height: 200px;
-  border-radius: 8px;
-  object-fit: cover;
+function applyFilters() {
+  const fm = new Set(getSelectedValues($fMethod));
+  const fo = new Set(getSelectedValues($fOrder));
+  const fc = new Set(getSelectedValues($fClass));
+  const ft = new Set(getSelectedValues($fTissue));  
+  const minInd = parseInt($fMinInd.value) || 0;
+  const speciesText = ($fSpecies.value || '').trim().toLowerCase();
+
+  return entries.filter(e => {
+    if (fm.size && !fm.has(e.method)) return false;
+    if (fo.size && !fo.has(e.order)) return false;
+    if (fc.size && !fc.has(e.class)) return false;
+    if (ft.size && !ft.has(e.tissue)) return false;
+    if (minInd > 0 && (parseInt(e.individuals) || 0) < minInd) return false;
+    if (speciesText && !(e.species || '').toLowerCase().includes(speciesText)) return false;
+    
+    return true;
+  });
 }
 
-.image-credit {
-  font-size: 0.7rem;
-  color: var(--muted);
-  text-align: center;
-  margin-top: 0.25rem;
-  font-style: italic;
+function render() {
+  let list = applyFilters();
+  
+  // Sort alphabetically by species name (fallback to TaxID)
+  list.sort((a, b) => {
+    const nameA = (a.species || '').toLowerCase();
+    const nameB = (b.species || '').toLowerCase();
+    return nameA.localeCompare(nameB) || String(a.taxid).localeCompare(String(b.taxid));
+  });
+  
+  $cards.innerHTML = '';
+
+  for (const e of list) {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    // ---- IMAGE ----
+if (e.image) {
+  // Clean markdown links: [text](url) → url
+  let cleanImageUrl = e.image;
+  const urlMatch = e.image.match(/\[.*?\]\((.*?)\)/);
+  if (urlMatch) cleanImageUrl = urlMatch[1];
+  
+  const imgContainer = document.createElement('div');
+  imgContainer.className = 'image-container';
+  
+  const img = document.createElement('img');
+  img.src = cleanImageUrl;
+  img.alt = e.common_name || e.species || 'Species image';
+  img.className = 'species-image';
+  imgContainer.appendChild(img);
+  
+  // ---- IMAGE CREDIT ----
+  if (e.image_credit) {
+    const credit = document.createElement('div');
+    credit.className = 'image-credit';
+    credit.textContent = e.image_credit;
+    imgContainer.appendChild(credit);
+  }
+  
+  card.appendChild(imgContainer);
 }
+
+    // ---- HEADER ----
+    const title = document.createElement('h3');
+    title.textContent = e.species || `TaxID ${e.taxid}`;
+    card.appendChild(title);
+
+    // ---- COMMON NAME ----
+    if (e.common_name) {
+      const cn = document.createElement('div');
+      cn.className = 'common-name';
+      cn.textContent = e.common_name;
+      card.appendChild(cn);
+    }
+
+    // ---- META ----
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+
+    meta.innerHTML = `
+      <span><strong>TaxID:</strong> ${e.taxid}</span>
+      <span><strong>Order:</strong> ${e.order || '-'}</span>
+      <span><strong>Class:</strong> ${e.class || '-'}</span>
+      <span><strong>Method:</strong> ${e.method}</span>
+      <span><strong>N:</strong> ${e.individuals}</span>
+      <span><strong>Tissue:</strong> ${e.tissue}</span>
+
+    `;
+    card.appendChild(meta);
+
+    // ---- LINKS ----
+    const links = document.createElement('div');
+    links.className = 'actions';
+
+    const doiHref = `https://doi.org/${encodeURIComponent(e.doi)}`;
+    const dataHref = e.data_url;
+    links.innerHTML = `
+      <label>
+        <input type="checkbox" class="checkbox" data-doi="${e.doi}" ${selected.has(e.doi) ? 'checked' : ''}/>
+        Select
+      </label>
+      <a class="link" href="${doiHref}" target="_blank" rel="noopener">Article</a>
+    `;
+    if (dataHref) {
+      links.innerHTML += `
+      <a class="link" href="${dataHref}" target="_blank" rel="noopener">Source data</a>
+      `;
+    }
+    card.appendChild(links);
+
+    // ---- NOTES ----
+    if (e.notes) {
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.textContent = 'Notes';
+      details.appendChild(summary);
+
+      const pre = document.createElement('pre');
+      pre.style.whiteSpace = 'pre-wrap';
+      pre.textContent = e.notes;
+
+      details.appendChild(pre);
+      card.appendChild(details);
+    }
+
+    $cards.appendChild(card);
+  }
+
+  // checkbox event listeners
+  document.querySelectorAll('.checkbox').forEach(cb => {
+    cb.addEventListener('change', (ev) => {
+      const doi = ev.target.getAttribute('data-doi');
+      if (ev.target.checked) selected.add(doi);
+      else selected.delete(doi);
+
+      $selCount.textContent = selected.size ? `${selected.size} selected` : '';
+    });
+  });
+
+  $selCount.textContent = selected.size ? `${selected.size} selected` : '';
+}
+
+function clearFilters() {
+  // clear multi-selects
+  [...$fMethod.options].forEach(o => (o.selected = false));
+  [...$fOrder.options].forEach(o => (o.selected = false));
+  [...$fClass.options].forEach(o => (o.selected = false));
+  [...$fTissue.options].forEach(o => (o.selected = false));
+  
+  // clear scalar inputs
+  $fMinInd.value = '';
+  $fSpecies.value = '';
+  
+  render();
+}
+
+async function downloadBib() {
+  const bibMap = await bibMapPromise;
+  const dois = [...selected];
+  if (!dois.length) return;
+  const parts = [];
+  for (const d of dois) { if (bibMap[d]) parts.push(bibMap[d]); }
+  if (!parts.length) return;
+  const blob = new Blob([parts.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `references_${new Date().toISOString().slice(0,10)}.bib`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  $fMethod.addEventListener('change', render);
+  $fOrder.addEventListener('change', render);
+  $fClass.addEventListener('change', render);
+  $fTissue.addEventListener('change', render);
+  $btnClear.addEventListener('click', clearFilters);
+  $fMinInd.addEventListener('input', render);
+  $fSpecies.addEventListener('input', render);
+  $btnBib.addEventListener('click', downloadBib);
+
+  populateFilters();
+  render();
+});
