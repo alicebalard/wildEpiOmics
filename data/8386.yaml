@@ -6,5 +6,6 @@ tissue: whole_organism
 method: RRBS
 image: https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Canetoadfemale.jpg/1280px-Canetoadfemale.jpg
 image_credit: "Benjamint444, GFDL 1.2"
+condition: early-life adversity
 notes: |
     Environmental effect (early-life adversity) on DNA methylation; Functional relevance of DNA methylation.
