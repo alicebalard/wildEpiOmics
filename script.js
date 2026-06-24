@@ -48,6 +48,15 @@ function getSelectedValues(sel) {
   return [...sel.options].filter(o => o.selected).map(o => o.value);
 }
 
+function enableClickToggle(sel) {
+  sel.addEventListener('mousedown', (ev) => {
+    if (ev.target.tagName !== 'OPTION') return;
+    ev.preventDefault();
+    ev.target.selected = !ev.target.selected;
+    sel.dispatchEvent(new Event('change'));
+  });
+}
+
 function applyFilters() {
   const fm = new Set(getSelectedValues($fMethod));
   const fo = new Set(getSelectedValues($fOrder));
@@ -225,6 +234,12 @@ async function downloadBib() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  enableClickToggle($fMethod);
+  enableClickToggle($fOrder);
+  enableClickToggle($fClass);
+  enableClickToggle($fTissue);
+  enableClickToggle($fCondition);
+
   $fMethod.addEventListener('change', render);
   $fOrder.addEventListener('change', render);
   $fClass.addEventListener('change', render);
