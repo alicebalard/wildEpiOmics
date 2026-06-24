@@ -1,0 +1,30 @@
+name: Bug report / code issue
+description: Report a problem with the website, build, or filters
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What's wrong?
+      description: What did you expect, and what actually happened?
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where?
+      placeholder: e.g. the Method filter, the build step, a specific card
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce (if relevant)
+      placeholder: |
+        1. Go to…
+        2. Click…
+        3. See…
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / device (for site issues)
+      placeholder: e.g. Firefox on Windows
