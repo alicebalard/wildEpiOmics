@@ -1,0 +1,14 @@
+{
+  "7868": {
+    "species": "Callorhinchus milii",
+    "order": "Chimaeriformes",
+    "class": "Chondrichthyes",
+    "common_name": "elephant shark"
+  },
+  "61383": {
+    "species": "Lynx canadensis",
+    "order": "Carnivora",
+    "class": "Mammalia",
+    "common_name": "Canada lynx"
+  }
+}
