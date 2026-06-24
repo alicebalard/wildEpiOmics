@@ -6,5 +6,6 @@ tissue: blood
 method: RRBS
 image: https://upload.wikimedia.org/wikipedia/commons/d/de/Papio_cynocephalus02.jpg
 image_credit: "Alexander Landfair, Public Domain"
+condition: rank, age, dominance, BMI, early =-life adversity 
 notes: |
     Environmental effect (early-life adversity) on DNA methylation; comparison of methylation levels beween groups (different environmental exposures)

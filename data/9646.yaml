@@ -3,8 +3,9 @@ taxid: 9646
 individuals: 6
 data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=857106
 tissue: blood
-method: WGBS
+method: WGBS+RNAseq
 image: https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Grosser_Panda.JPG/1920px-Grosser_Panda.JPG
 image_credit: "J. Patrick Fischer, CC BY-SA 3.0"
+condition: captivity
 notes: |
     comparison of methylation levels beween groups (captive Vs wild environment); Adaptive relevance of methylation; RNAseq associated are in another paper

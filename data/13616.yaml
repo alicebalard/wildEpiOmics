@@ -6,5 +6,6 @@ tissue: liver
 method: RRBS
 image: https://upload.wikimedia.org/wikipedia/commons/b/b5/Monodelphis_domestica.jpg
 image_credit: "Dawson, CC BY-SA 2.5"
+condition: NA
 notes: |
-    methylation differences in sex chromosomes; comparison of methylation patterns beween sex
+    methylation differences in sex chromosomes; comparison of methylation patterns between sex

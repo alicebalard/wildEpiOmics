@@ -6,5 +6,6 @@ tissue: blood
 method: RRBS
 image: https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/2010-kodiak-bear-1.jpg/1920px-2010-kodiak-bear-1.jpg
 image_credit: "Yathin S Krishnappa, CC BY-SA 3.0"
+condition: populations
 notes: |
     Population-level epigenomic divergence; Tissue-specific epigenomic structuring; Functional relevance of methylation

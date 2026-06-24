@@ -6,5 +6,6 @@ tissue: epidermis
 method: RRBS
 image: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Canada_lynx_by_Michael_Zahra_%28cropped%29.jpg/960px-Canada_lynx_by_Michael_Zahra_%28cropped%29.jpg
 image_credit: "Michael Zahra, CC BY-SA 3.0"
+condition: demography
 notes: |
     Historical demography & genetic structure; Epigenetic structure; Environmental effect on methylation; Functional relevance of differential methylation

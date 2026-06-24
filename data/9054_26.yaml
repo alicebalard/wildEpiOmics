@@ -6,5 +6,6 @@ tissue: muscle
 method: WGBS
 image: https://upload.wikimedia.org/wikipedia/commons/7/7c/Phasianus_colchicus_-Rutland_Water_-female-8.jpg
 image_credit: "Andy Vernon, CC BY 2.0"
+condition: captivity
 notes: |
     Methylation divergence between groups; development and validation of methylation-based discrimination panel

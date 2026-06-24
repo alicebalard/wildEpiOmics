@@ -6,5 +6,6 @@ tissue: blood
 method: RRBS
 image: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Great_tit_%28Parus_major%29%2C_Parc_du_Rouge-Cloitre%2C_For%C3%AAt_de_Soignes%2C_Brussels_%2826194636951%29.jpg/1920px-Great_tit_%28Parus_major%29%2C_Parc_du_Rouge-Cloitre%2C_For%C3%AAt_de_Soignes%2C_Brussels_%2826194636951%29.jpg
 image_credit: "Frank Vassen, CC BY 2.0"
+condition: pollution
 notes: |
     Environmental effect (pollution exposure) on DNA methylation; Genomic and functional characterization of DMRs.

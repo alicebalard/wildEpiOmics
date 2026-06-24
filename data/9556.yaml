@@ -6,4 +6,5 @@ tissue: blood
 method: RRBS
 image: https://upload.wikimedia.org/wikipedia/commons/d/de/Papio_cynocephalus02.jpg
 image_credit: "Alexander Landfair, Public Domain"
+condition: resource
 notes: Environmental effect (resource) on DNA methylation; temporal dynamics of DNA methylation

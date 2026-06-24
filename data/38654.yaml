@@ -6,5 +6,6 @@ tissue: muscle
 method: WGBS
 image: https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/ChineseAlligator15.JPG/1280px-ChineseAlligator15.JPG
 image_credit: "Greg Hume, CC BY-SA 3.0"
+condition: hibernation
 notes: |
     Hibernation-related methylation; Functional relevance of hibernation-related methylation

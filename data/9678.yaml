@@ -6,5 +6,6 @@ tissue: blood
 method: RRBS
 image: https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Spotted_hyena_%28Crocuta_crocuta%29.jpg/1920px-Spotted_hyena_%28Crocuta_crocuta%29.jpg
 image_credit: "Charles J. Sharp, CC BY-SA"
+condition: early-life social experience
 notes: |
     Environmental effect (early-life adversity) on DNA methylation; Functional relevance of DNA methylation
