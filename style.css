@@ -55,3 +55,38 @@ body { margin: 0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sa
   margin-top: 0.25rem;
   font-style: italic;
 }
+
+/* ---- Checkbox filter groups (replaces native multi-selects) ---- */
+.filter-group {
+  border: 1px solid var(--border);
+  border-radius: .25rem;
+  padding: .4rem .6rem .6rem;
+  margin: .75rem 0;
+}
+.filter-group legend {
+  font-weight: 600;
+  padding: 0 .3rem;
+}
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  max-height: 9rem;
+  overflow-y: auto;
+}
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 0;            /* override .filters label { margin: .75rem 0 } */
+  font-weight: normal;
+  cursor: pointer;
+}
+.checkbox-option input[type=checkbox] {
+  width: auto;          /* override .filters input { width: 100% } */
+}
+.multiomics {
+  color: var(--accent);
+  font-style: italic;
+  font-size: .8rem;
+}

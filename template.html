@@ -11,26 +11,35 @@
     <aside class="filters" aria-label="Filters">
       <h2>Filters</h2>
 
-      <label>Method
-        <select id="f-method" multiple aria-label="Filter by method"></select>
-      </label>
+      <fieldset class="filter-group">
+        <legend>Method</legend>
+        <div id="f-method" class="checkbox-group" aria-label="Filter by method"></div>
+      </fieldset>
 
-      <label>Order
-        <select id="f-order" multiple aria-label="Filter by order"></select>
-      </label>
+      <fieldset class="filter-group">
+        <legend>Condition</legend>
+        <div id="f-condition" class="checkbox-group" aria-label="Filter by condition"></div>
+      </fieldset>
 
-      <label>Class
-        <select id="f-class" multiple aria-label="Filter by class"></select>
-      </label>
+      <fieldset class="filter-group">
+        <legend>Order</legend>
+        <div id="f-order" class="checkbox-group" aria-label="Filter by order"></div>
+      </fieldset>
 
-      <label>Tissue
-        <select id="f-tissue" multiple aria-label="Filter by tissue"></select>
-      </label>
-            
+      <fieldset class="filter-group">
+        <legend>Class</legend>
+        <div id="f-class" class="checkbox-group" aria-label="Filter by class"></div>
+      </fieldset>
+
+      <fieldset class="filter-group">
+        <legend>Tissue</legend>
+        <div id="f-tissue" class="checkbox-group" aria-label="Filter by tissue"></div>
+      </fieldset>
+
       <label>Min Individuals
         <input id="f-min-ind" type="number" min="0" placeholder="e.g. 5" aria-label="Minimum individuals" />
       </label>
-      
+
       <label>Species Name
         <input id="f-species" type="text" placeholder="e.g. parus major" aria-label="Filter by species name" />
       </label>
