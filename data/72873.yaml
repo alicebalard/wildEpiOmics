@@ -1,0 +1,10 @@
+doi: 10.1111/mec.17456
+taxid: 72873
+individuals: 120
+data_url: https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA953597
+tissue: blood
+method: RRBS
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Tree_swallow_in_JBWR_%2825579%29.jpg/1280px-Tree_swallow_in_JBWR_%2825579%29.jpg
+image_credit: "Rhododendrites, CC BY-SA 4.0"
+notes: |
+    Environmental effect (experimentally induced stress) on methylayion; Methylation effects on stress physiology; Functional relevance of methylation
