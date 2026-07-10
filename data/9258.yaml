@@ -4,7 +4,7 @@ individuals: 4
 data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=356776
 tissue: Liver
 method: RRBS
-image: https://en.wikipedia.org/wiki/Platypus#/media/File:Duck-billed_platypus_(Ornithorhynchus_anatinus)_Scottsdale.jpg
+image: https://upload.wikimedia.org/wikipedia/commons/1/1a/Duck-billed_platypus_%28Ornithorhynchus_anatinus%29_Scottsdale.jpg
 image_credit: "Charles J. Sharp CC BY-SA 4.0"
 notes: |
     Methylation differences in sex chromosomes; comparison of methylation patterns beween sex.
