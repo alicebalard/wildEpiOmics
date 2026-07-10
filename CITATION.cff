@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+title: "wildEpiOmics: A catalog of wildlife epigenomics datasets"
+message: "If you use this database, please cite it using the metadata below."
+type: dataset
+authors:
+  - family-names: Balard
+    given-names: Alice
+    orcid: "https://orcid.org/0000-0002-0942-7479"
+abstract: >
+  A curated, searchable catalog of publicly available wild vertebrate
+  epigenomics datasets (WGBS, RRBS, and related methods), with metadata
+  on species, tissue, method, number of individuals, and study conditions.
+  Intended to support comparative epigenomics research in wildlife biology.
+keywords:
+  - epigenomics
+  - wildlife
+  - DNA methylation
+  - WGBS
+  - RRBS
+  - vertebrates
+  - comparative epigenetics
+license: CC-BY-4.0
+repository-code: "https://github.com/alicebalard/wildEpiOmics"
+url: "https://alicebalard.github.io/wildEpiOmics/"
+version: "0.1.0"
+date-released: "2026-07-10"
+
