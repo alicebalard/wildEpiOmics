@@ -4,7 +4,7 @@ individuals: 14
 data_url: https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA594256
 tissue: Blood
 method: WGBS+WGS
-image: https://en.wikipedia.org/wiki/Carrion_crow#/media/File:Carrion_crow_2022_04_05_05_02.jpg
+image: https://upload.wikimedia.org/wikipedia/commons/9/9d/Carrion_crow_2022_04_05_05_02.jpg
 image_credit: "Alexis Lours, CC BY 4.0"
 notes: |
     Genetic structure across the hybrid zone; Developmental, sex-specific, and taxon-driven effect on methylation variation; Covariation between methylation patterns and genomic ancestry; genetic Vs epigenetic structure
