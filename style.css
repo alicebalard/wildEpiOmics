@@ -48,6 +48,17 @@ body { margin: 0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sa
   object-fit: cover;
 }
 
+.cite-banner {
+  background: #eef4ff;
+  border: 1px solid #c0d4f5;
+  border-radius: .4rem;
+  padding: .6rem 1rem;
+  margin-bottom: 1rem;
+  font-size: .9rem;
+  color: #1a1a2e;
+}
+.cite-banner a { color: var(--accent); }
+
 .image-credit {
   font-size: 0.7rem;
   color: var(--muted);
