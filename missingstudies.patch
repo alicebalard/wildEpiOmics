@@ -1,0 +1,132 @@
+diff --git a/data/30422.yaml b/data/30422.yaml
+new file mode 100644
+index 0000000..e564f9d
+--- /dev/null
++++ b/data/30422.yaml
+@@ -0,0 +1,10 @@
++doi: 10.1111/mec.70026
++taxid: 30422
++individuals: 14
++data_url: https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA594256
++tissue: blood
++method: WGBS
++# image: TODO - add Wikimedia image URL
++# image_credit: TODO - add "Author, License"
++notes: |
++    Genetic structure across the hybrid zone; developmental, sex-specific, and taxon-driven effect on methylation variation; covariation between methylation patterns and genomic ancestry; genetic vs epigenetic structure
+diff --git a/data/69293_aaz113.yaml b/data/69293_aaz113.yaml
+new file mode 100644
+index 0000000..d639433
+--- /dev/null
++++ b/data/69293_aaz113.yaml
+@@ -0,0 +1,11 @@
++doi: 10.1126/sciadv.aaz113
++taxid: 69293
++individuals: 46
++data_url: https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA591803
++tissue: gills
++method: RRBS
++condition: wild
++# image: TODO - add Wikimedia image URL
++# image_credit: TODO - add "Author, License"
++notes: |
++    Wild-caught stickleback methylation study (a second, experimental cohort from the same paper, PRJNA590978, is not wild and excluded from this catalog).
+diff --git a/data/69293_msu344.yaml b/data/69293_msu344.yaml
+new file mode 100644
+index 0000000..99c808a
+--- /dev/null
++++ b/data/69293_msu344.yaml
+@@ -0,0 +1,10 @@
++doi: 10.1093/molbev/msu344
++taxid: 69293
++individuals: 8
++data_url: https://www.ncbi.nlm.nih.gov/sra/PRJEB7912
++tissue: lateral plate
++method: RRBS
++# image: TODO - add Wikimedia image URL
++# image_credit: TODO - add "Author, License"
++notes: |
++    DMRs identification; DNA methylation differences between groups; adaptive functional relevance of DMRs
+diff --git a/data/717918.yaml b/data/717918.yaml
+new file mode 100644
+index 0000000..c6d1abe
+--- /dev/null
++++ b/data/717918.yaml
+@@ -0,0 +1,11 @@
++doi: 10.1002/ece3.1993
++taxid: 717918
++individuals: unclear
++data_url: https://www.ncbi.nlm.nih.gov/sra/SRP048942
++tissue: different tissues tbc
++method: RRBS
++condition: experimentally induced early-life adversity
++# image: TODO - add Wikimedia image URL
++# image_credit: TODO - add "Author, License"
++notes: |
++    Environmental effect (experimentally induced early-life adversity) on methylation; the paternal contribution of epigenetic transmission; functional effect of methylation. Number of individuals and exact tissue(s) sampled unclear from source spreadsheet - verify against the paper before publishing.
+diff --git a/data/72873.yaml b/data/72873.yaml
+new file mode 100644
+index 0000000..60856b4
+--- /dev/null
++++ b/data/72873.yaml
+@@ -0,0 +1,11 @@
++doi: 10.1111/mec.17456
++taxid: 72873
++individuals: 120
++data_url: https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA953597
++tissue: blood
++method: RRBS
++condition: experimentally induced early-life adversity
++# image: TODO - add Wikimedia image URL
++# image_credit: TODO - add "Author, License"
++notes: |
++    Environmental effect (experimentally induced early-life adversity) on methylation; methylation effects on stress physiology; functional relevance of methylation
+diff --git a/data/77151.yaml b/data/77151.yaml
+new file mode 100644
+index 0000000..fd734a2
+--- /dev/null
++++ b/data/77151.yaml
+@@ -0,0 +1,10 @@
++doi: 10.1093/jhered/esaf056
++taxid: 77151
++individuals: 42
++data_url: https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA932458
++tissue: sperm
++method: RRBS
++# image: TODO - add Wikimedia image URL
++# image_credit: TODO - add "Author, License"
++notes: |
++    Environmental effects on sperm DNA methylation patterns; variation in DNA methylation associated with environment and sperm quality traits
+diff --git a/data/8030.yaml b/data/8030.yaml
+new file mode 100644
+index 0000000..84e90a2
+--- /dev/null
++++ b/data/8030.yaml
+@@ -0,0 +1,11 @@
++doi: 10.1038/s41598-017-05222-2
++taxid: 8030
++individuals: 24
++data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=388534
++tissue: embryo
++method: RRBS
++condition: early-life adversity
++# image: TODO - add Wikimedia image URL
++# image_credit: TODO - add "Author, License"
++notes: |
++    Environmental effect (early-life adversity) on DNA methylation; functional relevance of DNA methylation
+diff --git a/data/9258.yaml b/data/9258.yaml
+new file mode 100644
+index 0000000..d8be513
+--- /dev/null
++++ b/data/9258.yaml
+@@ -0,0 +1,10 @@
++doi: 10.1093/molbev/msx297
++taxid: 9258
++individuals: 4
++data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=356776
++tissue: liver
++method: RRBS
++# image: TODO - add Wikimedia image URL
++# image_credit: TODO - add "Author, License"
++notes: |
++    Methylation differences in sex chromosomes; comparison of methylation patterns between sex
