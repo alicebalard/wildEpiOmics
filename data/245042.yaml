@@ -1,0 +1,13 @@
+doi: 10.1098/rstb.2025.0027
+taxid: 245042
+individuals: 23
+data_url: https://www.ncbi.nlm.nih.gov/sra?LinkName=bioproject_sra_all&from_uid=1252789
+tissue: blood
+method: RRBS
+condition: "captivity, stress"
+image: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Superb_Starling_Portrait.jpg/1920px-Superb_Starling_Portrait.jpg
+image_credit: "Sumeet Moghe, CC BY-SA 3.0"
+notes: |
+    "Our goal was to probe the mechanistic bases of environmental coping in this species by simultaneously studying physiological and molecular flexibility in the same individuals when moved from a natural setting to a more stressful setting in captivity. After birds were transferred from the wild to captivity, we wanted to (i) determine whether baseline and stress-induced corticosterone both exhibited phenotypic flexibility and (ii) identify environmentally responsive regions of the superb starling genome that exhibit epigenetic flexibility."
+  
+  NB: repeated sampling on the same individuals (total samples 68)
