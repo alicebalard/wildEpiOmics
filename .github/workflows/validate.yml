@@ -1,0 +1,52 @@
+name: Validate data entries
+
+on:
+  push:
+    branches: [main]
+    paths: ['data/**']
+
+jobs:
+  check-duplicates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for duplicate doi+taxid+tissue combinations
+        run: |
+          python3 - << 'EOF'
+          import os, sys
+          import yaml
+
+          data_dir = "data"
+          seen = {}
+          duplicates = []
+
+          for fname in sorted(os.listdir(data_dir)):
+              if not fname.endswith((".yaml", ".yml")):
+                  continue
+              fpath = os.path.join(data_dir, fname)
+              try:
+                  entry = yaml.safe_load(open(fpath))
+              except Exception as e:
+                  print(f"❌ YAML parse error in {fname}: {e}")
+                  sys.exit(1)
+              if not entry:
+                  continue
+              key = (
+                  str(entry.get("doi", "")).strip(),
+                  str(entry.get("taxid", "")).strip(),
+                  str(entry.get("tissue", "")).strip().lower(),
+              )
+              if key in seen:
+                  duplicates.append((fname, seen[key], key))
+              else:
+                  seen[key] = fname
+
+          if duplicates:
+              print("⚠️  DUPLICATE ENTRIES FOUND:")
+              for new, old, (doi, taxid, tissue) in duplicates:
+                  print(f"  {new} duplicates {old}  (doi={doi}, taxid={taxid}, tissue={tissue})")
+              sys.exit(1)
+          else:
+              print(f"✅ No duplicates found across {len(seen)} entries.")
+          EOF
