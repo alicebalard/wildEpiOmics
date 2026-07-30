@@ -91,6 +91,50 @@ jobs:
             fs.writeFileSync(filename, yamlContent);
             core.setOutput("filename", filename);
 
+      - name: Check for duplicate entry
+        uses: actions/github-script@v7
+        with:
+           script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Read the just-written file to get doi, taxid, tissue
+            const filename = '${{ steps.extract.outputs.filename }}';
+            const content = fs.readFileSync(filename, 'utf8');
+
+            const get = (key) => {
+              const m = content.match(new RegExp(`^${key}:\\s*(.+)`, 'm'));
+              return m ? m[1].trim() : '';
+            };
+            const doi    = get('doi');
+            const taxid  = get('taxid');
+            const tissue = get('tissue').toLowerCase();
+
+            // Scan all other data files for the same combination
+            const dataDir = 'data';
+            const duplicates = [];
+            for (const f of fs.readdirSync(dataDir)) {
+              if (!f.endsWith('.yaml') && !f.endsWith('.yml')) continue;
+              const fp = path.join(dataDir, f);
+              if (fp === filename) continue;
+              const c = fs.readFileSync(fp, 'utf8');
+              const fDoi    = (c.match(/^doi:\s*(.+)/m) || [])[1]?.trim();
+              const fTaxid  = (c.match(/^taxid:\s*(.+)/m) || [])[1]?.trim();
+              const fTissue = ((c.match(/^tissue:\s*(.+)/m) || [])[1]?.trim() || '').toLowerCase();
+              if (fDoi === doi && fTaxid === taxid && fTissue === tissue) {
+                duplicates.push(f);
+              }
+            }
+
+            if (duplicates.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `⚠️ **Possible duplicate!** This entry (DOI \`${doi}\`, taxid \`${taxid}\`, tissue \`${tissue}\`) already exists in: ${duplicates.map(f => '`' + f + '`').join(', ')}.\n\nThe file was still saved — a maintainer should review and delete the duplicate if needed.`
+              });
+            }
+
       - name: Commit YAML file
         run: |
           git config user.name "github-actions[bot]"
