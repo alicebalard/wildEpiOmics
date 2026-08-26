@@ -11,6 +11,7 @@ const $fMinInd = document.getElementById('f-min-ind');
 const $fSpecies = document.getElementById('f-species');
 const $btnClear = document.getElementById('btn-clear');
 const $btnBib = document.getElementById('btn-download-bib');
+const $btnCsv = document.getElementById('btn-download-csv');
 const $selCount = document.getElementById('sel-count');
 
 let selected = new Set();
@@ -233,6 +234,22 @@ async function downloadBib() {
   URL.revokeObjectURL(url);
 }
 
+function downloadCSV() {
+  const dois = [...selected];
+  if (!dois.length) return;
+  const rows = entries.filter(e => dois.includes(e.doi));
+  const cols = ['doi','species','common_name','order','class','taxid','tissue','method','individuals','condition','data_url'];
+  const escape = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const header = cols.join(',');
+  const lines = rows.map(r => cols.map(c => escape(r[c])).join(','));
+  const blob = new Blob([[header, ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `studies_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   enableClickToggle($fMethod);
   enableClickToggle($fOrder);
@@ -249,6 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
   $fMinInd.addEventListener('input', render);
   $fSpecies.addEventListener('input', render);
   $btnBib.addEventListener('click', downloadBib);
+  $btnCsv.addEventListener('click', downloadCSV);
 
   populateFilters();
   render();
