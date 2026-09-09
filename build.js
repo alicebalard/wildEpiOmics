@@ -232,6 +232,19 @@ console.log("🔨 Building site...");
 // 1. Load YAML entries
 const data = readAllData();
 
+// Duplicate check: same taxid + data_url
+const seen = new Map();
+for (const entry of data) {
+  const key = `${entry.taxid}||${(entry.data_url || '').trim()}`;
+  if (seen.has(key)) {
+    console.warn(`⚠️  DUPLICATE: taxid=${entry.taxid}, data_url=${entry.data_url}`);
+    console.warn(`   First seen in doi: ${seen.get(key).doi}`);
+    console.warn(`   Duplicate doi:     ${entry.doi}`);
+  } else {
+    seen.set(key, entry);
+  }
+}
+
 console.log("🧬 Enriching taxonomy (NCBI)...");
 for (const entry of data) {
     if (entry.taxid) {
