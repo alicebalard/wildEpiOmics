@@ -57,7 +57,7 @@ jobs:
               const image_credit_raw = (body.match(/###\s*Image\s+credit\s*[\r\n]+([\s\S]*?)(?=\n###|\n$)/i) || [])[1] || "";
               const image_credit = image_credit_raw.replace(/^\s+|\s+$/g, '').trim();
               
-              if (image_credit) yamlContent += `\nimage_credit: "${image_credit}"`;
+
 
               const notesMatch = body.match(/###\s*main question\(s\) of the study\s*[\r\n]+([\s\S]*?)(?=###\s|\s*$)/i);
               const notes = notesMatch ? notesMatch[1].replace(/^\s+|\s+$/g, '') : "";
@@ -121,7 +121,11 @@ jobs:
               const fDoi    = (c.match(/^doi:\s*(.+)/m) || [])[1]?.trim();
               const fTaxid  = (c.match(/^taxid:\s*(.+)/m) || [])[1]?.trim();
               const fTissue = ((c.match(/^tissue:\s*(.+)/m) || [])[1]?.trim() || '').toLowerCase();
-              if (fDoi === doi && fTaxid === taxid && fTissue === tissue) {
+              const fDataUrl = ((c.match(/^data_url:\s*(.+)/m) || [])[1]?.trim() || '');
+              const dataUrl  = get('data_url');
+              const sameStudy = fDoi === doi && fTaxid === taxid && fTissue === tissue;
+              const sameRawData = dataUrl && fDataUrl && fDataUrl === dataUrl && fTaxid === taxid;
+              if (sameStudy || sameRawData) {
                 duplicates.push(f);
               }
             }

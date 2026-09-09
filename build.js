@@ -51,6 +51,19 @@ function readAllData() {
     return all;
 }
 
+// Duplicate check: same taxid + data_url
+const seen = new Map();
+for (const entry of data) {
+  const key = `${entry.taxid}||${(entry.data_url || '').trim()}`;
+  if (seen.has(key)) {
+    console.warn(`⚠️  DUPLICATE: taxid=${entry.taxid}, data_url=${entry.data_url}`);
+    console.warn(`   First seen in: ${seen.get(key).doi}`);
+    console.warn(`   Duplicate in:  ${entry.doi}`);
+  } else {
+    seen.set(key, entry);
+  }
+}
+
 // Simple GET returning text
 function httpGet(url, headers = {}) {
     return new Promise((resolve, reject) => {
