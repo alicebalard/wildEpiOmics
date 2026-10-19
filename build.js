@@ -163,14 +163,23 @@ async function enrichIUCN(speciesName) {
   if (!token || !speciesName) return {};
   try {
     const name = encodeURIComponent(speciesName);
+    // Pass token both as query param and header for maximum compatibility
     const { status: s1, json: j1 } = await httpGetJson(
-      `https://api.iucnredlist.org/api/v4/taxa/scientific_name/${name}`,
+      `https://api.iucnredlist.org/api/v4/taxa/scientific_name/${name}?token=${token}`,
       { headers: { Authorization: `Token ${token}` } }
     );
-    if (s1 !== 200 || !j1?.taxon?.sis_id) return {};
+    console.log(`  IUCN lookup for ${speciesName}: status=${s1}`);
+    if (s1 !== 200) {
+      console.warn(`  IUCN returned ${s1} for ${speciesName}:`, JSON.stringify(j1)?.slice(0, 200));
+      return {};
+    }
+    if (!j1?.taxon?.sis_id) {
+      console.warn(`  IUCN no sis_id for ${speciesName}:`, JSON.stringify(j1)?.slice(0, 200));
+      return {};
+    }
     const sisId = j1.taxon.sis_id;
     const { status: s2, json: j2 } = await httpGetJson(
-      `https://api.iucnredlist.org/api/v4/taxa/${sisId}/assessments/latest`,
+      `https://api.iucnredlist.org/api/v4/taxa/${sisId}/assessments/latest?token=${token}`,
       { headers: { Authorization: `Token ${token}` } }
     );
     if (s2 !== 200 || !j2?.assessment) return {};
@@ -192,16 +201,17 @@ async function enrichIUCN(speciesName) {
 async function fetchWikipediaImage(speciesName) {
   if (!speciesName) return {};
   try {
-    const name = encodeURIComponent(speciesName.replace(/ /g, '_'));
-    const { status, json } = await httpGetJson(
-      `https://en.wikipedia.org/api/rest_v1/page/summary/${name}`
-    );
-    if (status === 200 && json?.thumbnail?.source) {
-      return {
-        image:        json.originalimage?.source || json.thumbnail.source,
-        image_credit: '© Wikimedia Commons'
-      };
+    const title = encodeURIComponent(speciesName.replace(/ /g, '_'));
+    // Use w/api.php (MediaWiki API) — less likely to be blocked than REST v1
+    const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${title}&prop=pageimages&format=json&pithumbsize=400&origin=*`;
+    const { status, json } = await httpGetJson(apiUrl);
+    if (status === 200 && json?.query?.pages) {
+      const page = Object.values(json.query.pages)[0];
+      if (page?.thumbnail?.source) {
+        return { image: page.thumbnail.source, image_credit: '© Wikimedia Commons' };
+      }
     }
+    console.warn(`Wikipedia no image for ${speciesName}: status=${status}`);
   } catch (e) {
     console.warn(`Wikipedia image failed for ${speciesName}:`, e.message);
   }
