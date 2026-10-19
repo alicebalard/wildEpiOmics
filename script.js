@@ -148,6 +148,8 @@ if (e.image) {
       <span><strong>N:</strong> ${e.individuals}</span>
       <span><strong>Tissue:</strong> ${e.tissue}</span>
       ${e.condition ? `<span><strong>Condition:</strong> ${e.condition}</span>` : ''}
+      ${e.iucn_status ? `<span><strong>IUCN:</strong> ${e.iucn_status}</span>` : ''}
+      ${e.iucn_pop_trend ? `<span><strong>Trend:</strong> ${e.iucn_pop_trend}</span>` : ''}
 
     `;
     card.appendChild(meta);
@@ -164,6 +166,7 @@ if (e.image) {
         Select
       </label>
       <a class="link" href="${doiHref}" target="_blank" rel="noopener">Article</a>
+      ${e.iucn_url ? `<a class="link" href="${e.iucn_url}" target="_blank" rel="noopener">IUCN page</a>` : ''}
     `;
     if (dataHref) {
       links.innerHTML += `
