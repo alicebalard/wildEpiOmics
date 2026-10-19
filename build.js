@@ -155,6 +155,88 @@ out.order = foundOrder;
   return out;
 }
 
+// -----------------
+// IUCN: conservation status
+// -----------------
+async function enrichIUCN(speciesName) {
+  const token = process.env.IUCN_TOKEN;
+  if (!token || !speciesName) return {};
+
+  try {
+    const name = encodeURIComponent(speciesName);
+    // Step A: find the species internal ID
+    const { status: s1, json: j1 } = await httpGetJson(
+      `https://api.iucnredlist.org/api/v4/taxa/scientific_name/${name}`,
+      { headers: { Authorization: `Token ${token}` } }
+    );
+    if (s1 !== 200 || !j1?.taxon?.sis_id) return {};
+    const sisId = j1.taxon.sis_id;
+
+    // Step B: get the latest conservation assessment
+    const { status: s2, json: j2 } = await httpGetJson(
+      `https://api.iucnredlist.org/api/v4/taxa/${sisId}/assessments/latest`,
+      { headers: { Authorization: `Token ${token}` } }
+    );
+    if (s2 !== 200 || !j2?.assessment) return {};
+    const a = j2.assessment;
+
+    return {
+      iucn_status:    a.red_list_category?.code,       // e.g. "LC", "VU", "EN"
+      iucn_pop_trend: a.population_trend?.description, // e.g. "Decreasing"
+      iucn_url:       `https://www.iucnredlist.org/species/${sisId}`
+    };
+  } catch (e) {
+    console.warn(`IUCN failed for ${speciesName}:`, e.message);
+    return {};
+  }
+}
+
+// -----------------
+// Wikipedia: species image
+// -----------------
+async function fetchWikipediaImage(speciesName) {
+  if (!speciesName) return {};
+  try {
+    const name = encodeURIComponent(speciesName.replace(/ /g, '_'));
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${name}`;
+    const { status, json } = await httpGetJson(url);
+    if (status === 200 && json?.thumbnail?.source) {
+      // Get full-size image instead of thumbnail
+      const fullImage = json.originalimage?.source || json.thumbnail.source;
+      return {
+        image: fullImage,
+        image_credit: `© Wikimedia Commons`
+      };
+    }
+  } catch (e) {
+    console.warn(`Wikipedia image failed for ${speciesName}:`, e.message);
+  }
+  return {};
+}
+
+console.log("🔴 Fetching IUCN status...");
+console.log("🖼️  Fetching Wikipedia images...");
+for (const entry of data) {
+  if (entry.species) {
+    // IUCN status
+    const iucn = await enrichIUCN(entry.species);
+    if (iucn.iucn_status)    entry.iucn_status    = iucn.iucn_status;
+    if (iucn.iucn_pop_trend) entry.iucn_pop_trend = iucn.iucn_pop_trend;
+    if (iucn.iucn_url)       entry.iucn_url        = iucn.iucn_url;
+
+    // Wikipedia image — only if no image was set manually in the YAML
+    if (!entry.image) {
+      const wiki = await fetchWikipediaImage(entry.species);
+      if (wiki.image) {
+        entry.image        = wiki.image;
+        entry.image_credit = wiki.image_credit;
+      }
+    }
+
+    await new Promise(r => setTimeout(r, 300)); // small pause between requests
+  }
+}
+
 // --------------------------------------------------------------
 // BIBTEX GENERATION (unchanged)
 // --------------------------------------------------------------
