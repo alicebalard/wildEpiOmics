@@ -155,65 +155,6 @@ out.order = foundOrder;
   return out;
 }
 
-// -----------------
-// IUCN: conservation status
-// -----------------
-async function enrichIUCN(speciesName) {
-  const token = process.env.IUCN_TOKEN;
-  if (!token || !speciesName) return {};
-
-  try {
-    const name = encodeURIComponent(speciesName);
-    // Step A: find the species internal ID
-    const { status: s1, json: j1 } = await httpGetJson(
-      `https://api.iucnredlist.org/api/v4/taxa/scientific_name/${name}`,
-      { headers: { Authorization: `Token ${token}` } }
-    );
-    if (s1 !== 200 || !j1?.taxon?.sis_id) return {};
-    const sisId = j1.taxon.sis_id;
-
-    // Step B: get the latest conservation assessment
-    const { status: s2, json: j2 } = await httpGetJson(
-      `https://api.iucnredlist.org/api/v4/taxa/${sisId}/assessments/latest`,
-      { headers: { Authorization: `Token ${token}` } }
-    );
-    if (s2 !== 200 || !j2?.assessment) return {};
-    const a = j2.assessment;
-
-    return {
-      iucn_status:    a.red_list_category?.code,       // e.g. "LC", "VU", "EN"
-      iucn_pop_trend: a.population_trend?.description, // e.g. "Decreasing"
-      iucn_url:       `https://www.iucnredlist.org/species/${sisId}`
-    };
-  } catch (e) {
-    console.warn(`IUCN failed for ${speciesName}:`, e.message);
-    return {};
-  }
-}
-
-// -----------------
-// Wikipedia: species image
-// -----------------
-async function fetchWikipediaImage(speciesName) {
-  if (!speciesName) return {};
-  try {
-    const name = encodeURIComponent(speciesName.replace(/ /g, '_'));
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${name}`;
-    const { status, json } = await httpGetJson(url);
-    if (status === 200 && json?.thumbnail?.source) {
-      // Get full-size image instead of thumbnail
-      const fullImage = json.originalimage?.source || json.thumbnail.source;
-      return {
-        image: fullImage,
-        image_credit: `© Wikimedia Commons`
-      };
-    }
-  } catch (e) {
-    console.warn(`Wikipedia image failed for ${speciesName}:`, e.message);
-  }
-  return {};
-}
-
 // --------------------------------------------------------------
 // BIBTEX GENERATION (unchanged)
 // --------------------------------------------------------------
@@ -278,16 +219,29 @@ console.log("🔨 Building site...");
 // 1. Load YAML entries
 const data = readAllData();
 
-// Duplicate check
+// Duplicate check: same taxid + data_url
 const seen = new Map();
-for (const entry of data) { ... }
+for (const entry of data) {
+  const key = `${entry.taxid}||${(entry.data_url || '').trim()}`;
+  if (seen.has(key)) {
+    console.warn(`⚠️  DUPLICATE: taxid=${entry.taxid}, data_url=${entry.data_url}`);
+    console.warn(`   First seen in doi: ${seen.get(key).doi}`);
+    console.warn(`   Duplicate doi:     ${entry.doi}`);
+  } else {
+    seen.set(key, entry);
+  }
+}
 
 console.log("🧬 Enriching taxonomy (NCBI)...");
-for (const entry of data) { ... }   // NCBI loop
+for (const entry of data) {
+    if (entry.taxid) {
+        const extra = await enrichTaxonomy(entry.taxid);
+        Object.assign(entry, extra);
+    }
+}
 
-// ← NEW IUCN/Wikipedia loop goes HERE, after NCBI
-console.log("🔴 Fetching IUCN status...");
-console.log("🖼️  Fetching Wikipedia images...");
+// 2. Enrich with IUCN status and Wikipedia images
+console.log("🔴 Fetching IUCN status and 🖼️  Wikipedia images...");
 for (const entry of data) {
   if (entry.species) {
     const iucn = await enrichIUCN(entry.species);
@@ -304,8 +258,6 @@ for (const entry of data) {
     await new Promise(r => setTimeout(r, 300));
   }
 }
-
-console.log("📚 Fetching BibTeX…");   /
 
 // 3. Build BibTeX map
 console.log("📚 Fetching BibTeX…");
