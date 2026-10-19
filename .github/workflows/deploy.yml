@@ -39,7 +39,9 @@ jobs:
 
       - name: Build
         run: npm run build
-
+        env:
+          IUCN_TOKEN: ${{ secrets.IUCN_TOKEN }}
+        
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
