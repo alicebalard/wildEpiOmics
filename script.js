@@ -150,7 +150,6 @@ if (e.image) {
       ${e.condition ? `<span><strong>Condition:</strong> ${e.condition}</span>` : ''}
       ${e.iucn_status ? `<span><strong>IUCN:</strong> ${e.iucn_status}</span>` : ''}
       ${e.iucn_pop_trend ? `<span><strong>Trend:</strong> ${e.iucn_pop_trend}</span>` : ''}
-
     `;
     card.appendChild(meta);
 
