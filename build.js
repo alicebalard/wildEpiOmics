@@ -155,6 +155,59 @@ out.order = foundOrder;
   return out;
 }
 
+// -----------------
+// IUCN: conservation status
+// -----------------
+async function enrichIUCN(speciesName) {
+  const token = process.env.IUCN_TOKEN;
+  if (!token || !speciesName) return {};
+  try {
+    const name = encodeURIComponent(speciesName);
+    const { status: s1, json: j1 } = await httpGetJson(
+      `https://api.iucnredlist.org/api/v4/taxa/scientific_name/${name}`,
+      { headers: { Authorization: `Token ${token}` } }
+    );
+    if (s1 !== 200 || !j1?.taxon?.sis_id) return {};
+    const sisId = j1.taxon.sis_id;
+    const { status: s2, json: j2 } = await httpGetJson(
+      `https://api.iucnredlist.org/api/v4/taxa/${sisId}/assessments/latest`,
+      { headers: { Authorization: `Token ${token}` } }
+    );
+    if (s2 !== 200 || !j2?.assessment) return {};
+    const a = j2.assessment;
+    return {
+      iucn_status:    a.red_list_category?.code,
+      iucn_pop_trend: a.population_trend?.description,
+      iucn_url:       `https://www.iucnredlist.org/species/${sisId}`
+    };
+  } catch (e) {
+    console.warn(`IUCN failed for ${speciesName}:`, e.message);
+    return {};
+  }
+}
+
+// -----------------
+// Wikipedia: species image
+// -----------------
+async function fetchWikipediaImage(speciesName) {
+  if (!speciesName) return {};
+  try {
+    const name = encodeURIComponent(speciesName.replace(/ /g, '_'));
+    const { status, json } = await httpGetJson(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${name}`
+    );
+    if (status === 200 && json?.thumbnail?.source) {
+      return {
+        image:        json.originalimage?.source || json.thumbnail.source,
+        image_credit: '© Wikimedia Commons'
+      };
+    }
+  } catch (e) {
+    console.warn(`Wikipedia image failed for ${speciesName}:`, e.message);
+  }
+  return {};
+}
+
 // --------------------------------------------------------------
 // BIBTEX GENERATION (unchanged)
 // --------------------------------------------------------------
