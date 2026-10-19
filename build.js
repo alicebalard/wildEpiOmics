@@ -214,29 +214,6 @@ async function fetchWikipediaImage(speciesName) {
   return {};
 }
 
-console.log("🔴 Fetching IUCN status...");
-console.log("🖼️  Fetching Wikipedia images...");
-for (const entry of data) {
-  if (entry.species) {
-    // IUCN status
-    const iucn = await enrichIUCN(entry.species);
-    if (iucn.iucn_status)    entry.iucn_status    = iucn.iucn_status;
-    if (iucn.iucn_pop_trend) entry.iucn_pop_trend = iucn.iucn_pop_trend;
-    if (iucn.iucn_url)       entry.iucn_url        = iucn.iucn_url;
-
-    // Wikipedia image — only if no image was set manually in the YAML
-    if (!entry.image) {
-      const wiki = await fetchWikipediaImage(entry.species);
-      if (wiki.image) {
-        entry.image        = wiki.image;
-        entry.image_credit = wiki.image_credit;
-      }
-    }
-
-    await new Promise(r => setTimeout(r, 300)); // small pause between requests
-  }
-}
-
 // --------------------------------------------------------------
 // BIBTEX GENERATION (unchanged)
 // --------------------------------------------------------------
@@ -301,26 +278,34 @@ console.log("🔨 Building site...");
 // 1. Load YAML entries
 const data = readAllData();
 
-// Duplicate check: same taxid + data_url
+// Duplicate check
 const seen = new Map();
+for (const entry of data) { ... }
+
+console.log("🧬 Enriching taxonomy (NCBI)...");
+for (const entry of data) { ... }   // NCBI loop
+
+// ← NEW IUCN/Wikipedia loop goes HERE, after NCBI
+console.log("🔴 Fetching IUCN status...");
+console.log("🖼️  Fetching Wikipedia images...");
 for (const entry of data) {
-  const key = `${entry.taxid}||${(entry.data_url || '').trim()}`;
-  if (seen.has(key)) {
-    console.warn(`⚠️  DUPLICATE: taxid=${entry.taxid}, data_url=${entry.data_url}`);
-    console.warn(`   First seen in doi: ${seen.get(key).doi}`);
-    console.warn(`   Duplicate doi:     ${entry.doi}`);
-  } else {
-    seen.set(key, entry);
+  if (entry.species) {
+    const iucn = await enrichIUCN(entry.species);
+    if (iucn.iucn_status)    entry.iucn_status    = iucn.iucn_status;
+    if (iucn.iucn_pop_trend) entry.iucn_pop_trend = iucn.iucn_pop_trend;
+    if (iucn.iucn_url)       entry.iucn_url        = iucn.iucn_url;
+    if (!entry.image) {
+      const wiki = await fetchWikipediaImage(entry.species);
+      if (wiki.image) {
+        entry.image        = wiki.image;
+        entry.image_credit = wiki.image_credit;
+      }
+    }
+    await new Promise(r => setTimeout(r, 300));
   }
 }
 
-console.log("🧬 Enriching taxonomy (NCBI)...");
-for (const entry of data) {
-    if (entry.taxid) {
-        const extra = await enrichTaxonomy(entry.taxid);
-        Object.assign(entry, extra);
-    }
-}
+console.log("📚 Fetching BibTeX…");   /
 
 // 3. Build BibTeX map
 console.log("📚 Fetching BibTeX…");
