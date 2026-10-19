@@ -240,6 +240,25 @@ for (const entry of data) {
     }
 }
 
+// 2. Enrich with IUCN status and Wikipedia images
+console.log("🔴 Fetching IUCN status and 🖼️  Wikipedia images...");
+for (const entry of data) {
+  if (entry.species) {
+    const iucn = await enrichIUCN(entry.species);
+    if (iucn.iucn_status)    entry.iucn_status    = iucn.iucn_status;
+    if (iucn.iucn_pop_trend) entry.iucn_pop_trend = iucn.iucn_pop_trend;
+    if (iucn.iucn_url)       entry.iucn_url        = iucn.iucn_url;
+    if (!entry.image) {
+      const wiki = await fetchWikipediaImage(entry.species);
+      if (wiki.image) {
+        entry.image        = wiki.image;
+        entry.image_credit = wiki.image_credit;
+      }
+    }
+    await new Promise(r => setTimeout(r, 300));
+  }
+}
+
 // 3. Build BibTeX map
 console.log("📚 Fetching BibTeX…");
 ensureDir(PUBLIC_DIR);
