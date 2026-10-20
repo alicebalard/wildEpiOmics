@@ -76,30 +76,24 @@ body { margin: 0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sa
 .title-row h3 { margin: 0; flex: 1; }
 
 .iucn-logo {
-  width: 12px;
-  height: 12px;
-  margin-right: 4px;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
   vertical-align: middle;
   border-radius: 2px;
 }
 
 .iucn-badge {
-  display: inline-block;
-  padding: .15rem .45rem;
-  border-radius: .25rem;
+  display: inline-flex;
+  align-items: center;
+  padding: .2rem .5rem;
+  border-radius: .3rem;
   font-weight: 700;
   font-size: .8rem;
   color: #fff;
+  background: #e8272c;
   letter-spacing: .03em;
   text-decoration: none;
+  white-space: nowrap;
 }
 .iucn-badge:hover { opacity: .85; }
-.iucn-EX  { background: #000000; }
-.iucn-EW  { background: #542344; }
-.iucn-CR  { background: #D81E05; }
-.iucn-EN  { background: #FC7F3F; color: #000; }
-.iucn-VU  { background: #F9E814; color: #000; }
-.iucn-NT  { background: #CCE226; color: #000; }
-.iucn-LC  { background: #60C659; color: #000; }
-.iucn-DD  { background: #D1D1C6; color: #000; }
-.iucn-NE  { background: #D1D1C6; color: #000; }
