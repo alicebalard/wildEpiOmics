@@ -54,6 +54,37 @@ body:
       required: true
 
   - type: input
+    id: capture_years
+    attributes:
+      label: year(s) of capture
+      description: Year or range of years when samples were collected, e.g. `2021` or `2018-2020`
+      placeholder: "2021"
+    validations:
+      required: false
+
+  - type: input
+    id: location
+    attributes:
+      label: geographical location
+      description: Where the animals were sampled, e.g. `Serengeti, Tanzania` or `Fowlers Gap, New South Wales, Australia`
+      placeholder: "Country or region"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: realm
+    attributes:
+      label: realm
+      description: Primary habitat of the study species (leave blank to use IUCN automatic value)
+      options:
+        - ""
+        - terrestrial
+        - freshwater
+        - marine
+    validations:
+      required: false
+
+  - type: input
     id: condition
     attributes:
       label: condition(s) studied
