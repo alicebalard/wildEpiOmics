@@ -34,18 +34,14 @@ function httpGetJson(url) {
 }
 
 function readAllSpecies() {
-  const species = new Set();
-  if (!fs.existsSync(DATA_DIR)) return species;
-  for (const file of fs.readdirSync(DATA_DIR)) {
-    const ext = path.extname(file).toLowerCase();
-    if (![".yaml", ".yml", ".json"].includes(ext)) continue;
-    try {
-      const content = fs.readFileSync(path.join(DATA_DIR, file), "utf8");
-      const parsed = ext === ".json" ? JSON.parse(content) : parseYAML(content);
-      if (parsed?.species) species.add(parsed.species);
-    } catch {}
+  // Species names come from NCBI enrichment, stored in cache/taxonomy.json
+  const taxFile = path.join(__dirname, "cache", "taxonomy.json");
+  if (!fs.existsSync(taxFile)) {
+    console.error("cache/taxonomy.json not found — run a build first");
+    return new Set();
   }
-  return species;
+  const taxonomy = JSON.parse(fs.readFileSync(taxFile, "utf8"));
+  return new Set(Object.values(taxonomy).map(t => t.species).filter(Boolean));
 }
 
 const token = process.env.IUCN_TOKEN;
