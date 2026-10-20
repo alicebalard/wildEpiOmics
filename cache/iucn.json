@@ -6,5 +6,81 @@
   "Lynx canadensis": {
     "iucn_status": "LC",
     "iucn_url": "https://www.iucnredlist.org/species/12518/275326314"
+  },
+  "Salvelinus alpinus": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/242222668/242224493"
+  },
+  "Rhinella marina": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/100099625/2951416"
+  },
+  "Caretta caretta": {
+    "iucn_status": "VU",
+    "iucn_url": "https://www.iucnredlist.org/species/3897/119333622"
+  },
+  "Chelonia mydas": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/4615/285108125"
+  },
+  "Phasianus colchicus": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/45100023/280926744"
+  },
+  "Parus major": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/22735990/264577711"
+  },
+  "Ornithorhynchus anatinus": {
+    "iucn_status": "NT",
+    "iucn_url": "https://www.iucnredlist.org/species/40488/21964009"
+  },
+  "Papio cynocephalus": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/92250442/92251260"
+  },
+  "Ursus arctos": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/41688/216873475"
+  },
+  "Ailuropoda melanoleuca": {
+    "iucn_status": "VU",
+    "iucn_url": "https://www.iucnredlist.org/species/712/121745669"
+  },
+  "Crocuta crocuta": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/5674/45194782"
+  },
+  "Monodelphis domestica": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/40514/197307682"
+  },
+  "Corvus corone": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/22706016/264543876"
+  },
+  "Gambusia affinis": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/166562/58317114"
+  },
+  "Alligator sinensis": {
+    "iucn_status": "CR",
+    "iucn_url": "https://www.iucnredlist.org/species/867/3146005"
+  },
+  "Gasterosteus aculeatus": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/225345695/221209504"
+  },
+  "Tachycineta bicolor": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/22712057/137687319"
+  },
+  "Mustela nigripes": {
+    "iucn_status": "EN",
+    "iucn_url": "https://www.iucnredlist.org/species/14020/45200314"
+  },
+  "Lamprotornis superbus": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/22710767/264231105"
   }
 }
