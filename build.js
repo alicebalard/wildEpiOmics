@@ -163,31 +163,20 @@ async function enrichIUCN(speciesName) {
   if (!token || !speciesName) return {};
   try {
     const name = encodeURIComponent(speciesName);
-    // Pass token both as query param and header for maximum compatibility
-    const { status: s1, json: j1 } = await httpGetJson(
-      `https://api.iucnredlist.org/api/v4/taxa/scientific_name/${name}?token=${token}`,
-      { headers: { Authorization: `Token ${token}` } }
+    // IUCN Red List API v3 — stable, uses token as query param
+    const { status, json } = await httpGetJson(
+      `https://apiv3.iucnredlist.org/api/v3/species/${name}?token=${token}`
     );
-    console.log(`  IUCN lookup for ${speciesName}: status=${s1}`);
-    if (s1 !== 200) {
-      console.warn(`  IUCN returned ${s1} for ${speciesName}:`, JSON.stringify(j1)?.slice(0, 200));
+    console.log(`  IUCN v3 lookup for ${speciesName}: status=${status}`);
+    if (status !== 200 || !json?.result?.length) {
+      console.warn(`  IUCN v3 no result for ${speciesName}`);
       return {};
     }
-    if (!j1?.taxon?.sis_id) {
-      console.warn(`  IUCN no sis_id for ${speciesName}:`, JSON.stringify(j1)?.slice(0, 200));
-      return {};
-    }
-    const sisId = j1.taxon.sis_id;
-    const { status: s2, json: j2 } = await httpGetJson(
-      `https://api.iucnredlist.org/api/v4/taxa/${sisId}/assessments/latest?token=${token}`,
-      { headers: { Authorization: `Token ${token}` } }
-    );
-    if (s2 !== 200 || !j2?.assessment) return {};
-    const a = j2.assessment;
+    const r = json.result[0];
     return {
-      iucn_status:    a.red_list_category?.code,
-      iucn_pop_trend: a.population_trend?.description,
-      iucn_url:       `https://www.iucnredlist.org/species/${sisId}`
+      iucn_status:    r.category,
+      iucn_pop_trend: r.population_trend,
+      iucn_url:       `https://www.iucnredlist.org/species/${r.taxonid}`
     };
   } catch (e) {
     console.warn(`IUCN failed for ${speciesName}:`, e.message);
