@@ -155,22 +155,12 @@ out.order = foundOrder;
   return out;
 }
 
-// -----------------
-// IUCN: conservation status
-// -----------------
-// Load IUCN cache (populated locally by fetch-iucn.js, committed to repo)
+// IUCN: read from cache populated by fetch-iucn.R (run locally)
 const IUCN_CACHE_FILE = path.join(ROOT, "cache", "iucn.json");
 const iucnCache = fs.existsSync(IUCN_CACHE_FILE)
   ? JSON.parse(fs.readFileSync(IUCN_CACHE_FILE, "utf8"))
   : {};
-console.log(`📋 IUCN cache loaded: ${Object.keys(iucnCache).length} entries`);
-
-function enrichIUCN(speciesName) {
-  if (!speciesName) return {};
-  const entry = iucnCache[speciesName];
-  if (!entry) return {};
-  return entry;
-}
+console.log(`📋 IUCN cache: ${Object.keys(iucnCache).length} entries`);
 
 // -----------------
 // Wikipedia: species image
@@ -284,26 +274,30 @@ for (const entry of data) {
     }
 }
 
-// 2. Enrich with IUCN status and Wikipedia images
-console.log("🔴 Fetching IUCN status and 🖼️  Wikipedia images...");
+// 2. Apply IUCN cache and fetch images
 for (const entry of data) {
-  if (entry.species) {
-    const iucn = enrichIUCN(entry.species);
-    if (iucn.iucn_status)    entry.iucn_status    = iucn.iucn_status;
-    if (iucn.iucn_pop_trend) entry.iucn_pop_trend = iucn.iucn_pop_trend;
-    if (iucn.iucn_url)       entry.iucn_url        = iucn.iucn_url;
-    if (!entry.image) {
-      const wiki = await fetchSpeciesImage(entry.species);
-      if (wiki.image) {
-        entry.image        = wiki.image;
-        entry.image_credit = wiki.image_credit;
-      }
+  if (entry.species && iucnCache[entry.species]) {
+    const c = iucnCache[entry.species];
+    if (c.iucn_status)    entry.iucn_status    = c.iucn_status;
+    if (c.iucn_pop_trend) entry.iucn_pop_trend = c.iucn_pop_trend;
+    if (c.iucn_url)       entry.iucn_url        = c.iucn_url;
+  }
+}
+
+// 3. Fetch species images from iNaturalist
+console.log("🖼️  Fetching species images (iNaturalist)...");
+for (const entry of data) {
+  if (entry.species && !entry.image) {
+    const wiki = await fetchSpeciesImage(entry.species);
+    if (wiki.image) {
+      entry.image        = wiki.image;
+      entry.image_credit = wiki.image_credit;
     }
     await new Promise(r => setTimeout(r, 300));
   }
 }
 
-// 3. Build BibTeX map
+// 4. Build BibTeX map
 console.log("📚 Fetching BibTeX…");
 ensureDir(PUBLIC_DIR);
 const bibMap = await buildBibtexMap(data);
