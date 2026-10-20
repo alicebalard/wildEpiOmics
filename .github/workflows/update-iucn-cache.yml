@@ -1,0 +1,43 @@
+name: Update IUCN cache
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'data/**'           # only runs when new study data is added
+      - 'cache/taxonomy.json'
+
+permissions:
+  contents: write
+
+jobs:
+  update-iucn:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.4'
+
+      - name: Install rredlist and jsonlite
+        run: Rscript -e 'install.packages(c("rredlist","jsonlite"), repos="https://cloud.r-project.org")'
+
+      - name: Fetch IUCN status for new species
+        env:
+          IUCN_REDLIST_KEY: ${{ secrets.IUCN_TOKEN }}
+        run: Rscript fetch-iucn.R
+
+      - name: Commit updated cache if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cache/iucn.json
+          if git diff --cached --quiet; then
+            echo "No new IUCN data — cache unchanged"
+          else
+            git commit -m "chore: update IUCN cache [skip ci]"
+            git push
+          fi
