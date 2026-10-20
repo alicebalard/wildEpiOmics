@@ -138,7 +138,10 @@ if (e.image) {
       logo.alt = 'IUCN';
       logo.className = 'iucn-logo';
       badge.appendChild(logo);
-      badge.appendChild(document.createTextNode(`<${e.iucn_status}>`));
+      const statusText = document.createElement('span');
+      statusText.className = 'iucn-badge-text';
+      statusText.textContent = `<${e.iucn_status}>`;
+      badge.appendChild(statusText);
       titleRow.appendChild(badge);
     }
     card.appendChild(titleRow);
