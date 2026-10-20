@@ -51,6 +51,7 @@ jobs:
             echo "Taxonomy cache unchanged"
           else
             git commit -m "chore: update taxonomy cache [skip ci]"
+            git pull --rebase origin main
             git push
           fi
 
