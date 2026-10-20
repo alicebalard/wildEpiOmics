@@ -20,9 +20,9 @@ const DATA_DIR  = path.join(__dirname, "data");
 const CACHE_DIR = path.join(__dirname, "cache");
 const OUT_FILE  = path.join(CACHE_DIR, "iucn.json");
 
-function httpGetJson(url) {
+function httpGetJson(url, options = {}) {
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
+    https.get(url, options, (res) => {
       let data = "";
       res.on("data", c => data += c);
       res.on("end", () => {
@@ -56,20 +56,41 @@ console.log(`Found ${allSpecies.size} unique species`);
 for (const name of allSpecies) {
   if (existing[name]) { console.log(`  (cached) ${name}`); continue; }
   const encoded = encodeURIComponent(name);
-  const { status, json } = await httpGetJson(
-    `https://apiv3.iucnredlist.org/api/v3/species/${encoded}?token=${token}`
-  );
-  if (status === 200 && json?.result?.length) {
-    const r = json.result[0];
+  try {
+    // Step 1: get sis_id from species name
+    const r1 = await httpGetJson(
+      `https://api.iucnredlist.org/api/v4/taxa/scientific_name/${encoded}`,
+      { headers: { Authorization: `Token ${token}` } }
+    );
+    if (r1.status !== 200 || !r1.json?.taxon?.sis_id) {
+      console.warn(`  ❌ ${name}: step1 status ${r1.status}`);
+      existing[name] = null;
+      await new Promise(r => setTimeout(r, 300));
+      continue;
+    }
+    const sisId = r1.json.taxon.sis_id;
+
+    // Step 2: get latest assessment
+    const r2 = await httpGetJson(
+      `https://api.iucnredlist.org/api/v4/taxa/${sisId}/assessments/latest`,
+      { headers: { Authorization: `Token ${token}` } }
+    );
+    if (r2.status !== 200 || !r2.json?.assessment) {
+      console.warn(`  ❌ ${name}: step2 status ${r2.status}`);
+      existing[name] = null;
+      await new Promise(r => setTimeout(r, 300));
+      continue;
+    }
+    const a = r2.json.assessment;
     existing[name] = {
-      iucn_status:    r.category,
-      iucn_pop_trend: r.population_trend,
-      iucn_url:       `https://www.iucnredlist.org/species/${r.taxonid}`
+      iucn_status:    a.red_list_category?.code,
+      iucn_pop_trend: a.population_trend?.description,
+      iucn_url:       `https://www.iucnredlist.org/species/${sisId}`
     };
-    console.log(`  ✅ ${name}: ${r.category} (${r.population_trend})`);
-  } else {
-    existing[name] = null; // mark as not found so we don't retry
-    console.warn(`  ❌ ${name}: status ${status}`);
+    console.log(`  ✅ ${name}: ${existing[name].iucn_status} (${existing[name].iucn_pop_trend})`);
+  } catch (e) {
+    console.warn(`  ❌ ${name}: ${e.message}`);
+    existing[name] = null;
   }
   await new Promise(r => setTimeout(r, 500));
 }
