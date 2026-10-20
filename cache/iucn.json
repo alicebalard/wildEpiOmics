@@ -1,1 +1,10 @@
-{}
+{
+  "Callorhinchus milii": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/41743/124415895"
+  },
+  "Lynx canadensis": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/12518/275326314"
+  }
+}
