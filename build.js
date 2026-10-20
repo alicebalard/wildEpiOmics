@@ -44,6 +44,11 @@ function readAllData() {
 	try {
 	    const content = fs.readFileSync(path.join(DATA_DIR, file), "utf8");
 	    const parsed = ext === ".json" ? JSON.parse(content) : parseYAML(content);
+	    // Strip GitHub issue form "no response" placeholders
+	    for (const key of Object.keys(parsed)) {
+	      const v = parsed[key];
+	      if (typeof v === 'string' && /^_no\b/i.test(v.trim())) parsed[key] = null;
+	    }
 	    all.push(parsed);
 	} catch (err) {
 	    console.error("❌ Failed parsing", file, err);
