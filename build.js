@@ -155,8 +155,12 @@ out.order = foundOrder;
   return out;
 }
 
-// IUCN fields (iucn_status, iucn_pop_trend, iucn_url) are added directly
-// to each YAML entry by hand — no API call needed.
+// IUCN: read from cache populated by fetch-iucn.R (run locally)
+const IUCN_CACHE_FILE = path.join(ROOT, "cache", "iucn.json");
+const iucnCache = fs.existsSync(IUCN_CACHE_FILE)
+  ? JSON.parse(fs.readFileSync(IUCN_CACHE_FILE, "utf8"))
+  : {};
+console.log(`📋 IUCN cache: ${Object.keys(iucnCache).length} entries`);
 
 // -----------------
 // Wikipedia: species image
@@ -270,7 +274,17 @@ for (const entry of data) {
     }
 }
 
-// 2. Fetch species images from iNaturalist
+// 2. Apply IUCN cache and fetch images
+for (const entry of data) {
+  if (entry.species && iucnCache[entry.species]) {
+    const c = iucnCache[entry.species];
+    if (c.iucn_status)    entry.iucn_status    = c.iucn_status;
+    if (c.iucn_pop_trend) entry.iucn_pop_trend = c.iucn_pop_trend;
+    if (c.iucn_url)       entry.iucn_url        = c.iucn_url;
+  }
+}
+
+// 3. Fetch species images from iNaturalist
 console.log("🖼️  Fetching species images (iNaturalist)...");
 for (const entry of data) {
   if (entry.species && !entry.image) {
@@ -283,7 +297,7 @@ for (const entry of data) {
   }
 }
 
-// 3. Build BibTeX map
+// 4. Build BibTeX map
 console.log("📚 Fetching BibTeX…");
 ensureDir(PUBLIC_DIR);
 const bibMap = await buildBibtexMap(data);
