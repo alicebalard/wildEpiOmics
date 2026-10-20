@@ -75,14 +75,15 @@ body:
     id: realm
     attributes:
       label: realm
-      description: Primary habitat of the study species (leave blank to use IUCN automatic value)
+      description: Primary habitat of the study species
       options:
-        - ""
         - terrestrial
         - freshwater
         - marine
+        - terrestrial, freshwater
+        - terrestrial, marine
     validations:
-      required: false
+      required: true
 
   - type: input
     id: condition
