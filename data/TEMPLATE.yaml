@@ -1,0 +1,27 @@
+# Copy this file, rename it to <NCBI_TaxID>.yaml, and fill in the fields.
+# Required fields: doi, taxid, individuals, tissue, method
+# All other fields are optional but encouraged.
+
+doi: 10.XXXX/XXXXXXXX          # DOI of the publication
+taxid: 9999                     # NCBI Taxonomy ID of the study species
+
+individuals: 10                 # Number of individuals sampled
+tissue: blood                   # Tissue type (e.g. blood, liver, muscle, brain)
+method: WGBS                    # Sequencing method: WGBS or RRBS
+
+capture_years: "2021-2022"      # Year(s) samples were collected (e.g. "2019", "2018-2020")
+location: "Serengeti, Tanzania" # Geographical location of sampling
+
+# Realm: leave blank to use IUCN automatic value, or set manually
+# Choose one or more: terrestrial, freshwater, marine
+realm: terrestrial
+
+condition: NA                   # Experimental condition if relevant (e.g. "stress, captivity")
+data_url: https://www.ncbi.nlm.nih.gov/sra?...  # Link to raw data
+
+# Image: leave blank — fetched automatically from iNaturalist
+# image: https://...
+# image_credit: "Author, CC BY"
+
+notes: |
+  Free-text notes about the study.

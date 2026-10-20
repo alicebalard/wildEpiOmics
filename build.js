@@ -39,6 +39,7 @@ function readAllData() {
     for (const file of fs.readdirSync(DATA_DIR)) {
 	const ext = path.extname(file).toLowerCase();
 	if (![".yaml", ".yml", ".json"].includes(ext)) continue;
+	if (file.toUpperCase().startsWith("TEMPLATE")) continue;
 
 	try {
 	    const content = fs.readFileSync(path.join(DATA_DIR, file), "utf8");
@@ -297,6 +298,7 @@ for (const entry of data) {
     if (c.iucn_status)    entry.iucn_status    = c.iucn_status;
     if (c.iucn_pop_trend) entry.iucn_pop_trend = c.iucn_pop_trend;
     if (c.iucn_url)       entry.iucn_url        = c.iucn_url;
+    if (c.iucn_realm && !entry.realm) entry.realm = c.iucn_realm;
   }
 }
 
