@@ -52,9 +52,18 @@ for (sp in species_names) {
     if (!is.null(assessments) && nrow(assessments) > 0) {
       latest <- assessments[assessments$latest == TRUE, ]
       if (nrow(latest) == 0) latest <- assessments[1, ]  # fallback to first
+      # Extract realm (systems): terrestrial / freshwater / marine
+      sid <- latest$sis_taxon_id[1]
+      realm <- tryCatch({
+        hab <- rl_habitats(id = sid, key = token)$result
+        systems <- unique(hab$system)
+        if (length(systems) > 0) paste(tolower(systems), collapse = ", ") else NA
+      }, error = function(e) NA)
+
       results[[sp]] <- list(
         iucn_status    = latest$red_list_category_code[1],
-        iucn_url       = latest$url[1]
+        iucn_url       = latest$url[1],
+        iucn_realm     = if (!is.na(realm)) realm else NULL
       )
       cat("  OK", sp, ":", results[[sp]]$iucn_status, "\n")
     } else {
