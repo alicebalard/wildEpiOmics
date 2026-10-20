@@ -39,18 +39,15 @@ for (sp in species_names) {
     # rredlist >= 1.0.0 uses rl_species() (IUCN v4 API)
     parts <- strsplit(sp, " ")[[1]]
     res <- rl_species(genus = parts[1], species = parts[2], key = token)
-    # rl_species returns a list; taxon info is in res$taxon, assessment in res$assessments
-    taxon <- res$taxon
-    assessment <- if (!is.null(res$assessments) && length(res$assessments) > 0)
-      res$assessments[[1]] else NULL
-    if (!is.null(taxon) && !is.null(assessment)) {
-      sis_id <- taxon$sis_id %||% taxon$taxonid
+    assessments <- res$assessments
+    if (!is.null(assessments) && nrow(assessments) > 0) {
+      latest <- assessments[assessments$latest == TRUE, ]
+      if (nrow(latest) == 0) latest <- assessments[1, ]  # fallback to first
       results[[sp]] <- list(
-        iucn_status    = assessment$red_list_category$code %||% assessment$category,
-        iucn_pop_trend = assessment$population_trend$description %||% assessment$population_trend,
-        iucn_url       = paste0("https://www.iucnredlist.org/species/", sis_id)
+        iucn_status    = latest$red_list_category_code[1],
+        iucn_url       = latest$url[1]
       )
-      cat("  OK", sp, ":", results[[sp]]$iucn_status, "(", results[[sp]]$iucn_pop_trend, ")\n")
+      cat("  OK", sp, ":", results[[sp]]$iucn_status, "\n")
     } else {
       results[[sp]] <- NULL
       cat("  not found:", sp, "\n")
