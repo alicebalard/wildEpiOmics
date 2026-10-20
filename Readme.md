@@ -1,5 +1,5 @@
 [![Build & Deploy](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml)
-[![Parse Reviewed Entries](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parse-reviewed.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parsereviewed.yml)
+[![Parse Reviewed Entries](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parsereviewed.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parsereviewed.yml)
 
 ![Study count](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alicebalard/wildEpiOmics/main/.meta/study_count.json)
 ![Last deploy](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alicebalard/wildEpiOmics/main/.meta/last_deploy.json)
