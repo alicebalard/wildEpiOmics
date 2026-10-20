@@ -67,6 +67,22 @@ body { margin: 0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sa
   font-style: italic;
 }
 
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.title-row h3 { margin: 0; flex: 1; }
+
+.iucn-logo {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+
 .iucn-badge {
   display: inline-block;
   padding: .15rem .45rem;

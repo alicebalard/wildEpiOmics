@@ -124,9 +124,24 @@ if (e.image) {
 }
 
     // ---- HEADER ----
+    const titleRow = document.createElement('div');
+    titleRow.className = 'title-row';
     const title = document.createElement('h3');
     title.textContent = e.species || `TaxID ${e.taxid}`;
-    card.appendChild(title);
+    titleRow.appendChild(title);
+    if (e.iucn_status) {
+      const badge = document.createElement(e.iucn_url ? 'a' : 'span');
+      badge.className = `iucn-badge iucn-${e.iucn_status}`;
+      if (e.iucn_url) { badge.href = e.iucn_url; badge.target = '_blank'; badge.rel = 'noopener'; }
+      const logo = document.createElement('img');
+      logo.src = 'https://www.iucnredlist.org/favicon.ico';
+      logo.alt = 'IUCN';
+      logo.className = 'iucn-logo';
+      badge.appendChild(logo);
+      badge.appendChild(document.createTextNode(e.iucn_status));
+      titleRow.appendChild(badge);
+    }
+    card.appendChild(titleRow);
 
     // ---- COMMON NAME ----
     if (e.common_name) {
@@ -148,11 +163,6 @@ if (e.image) {
       <span><strong>N:</strong> ${e.individuals}</span>
       <span><strong>Tissue:</strong> ${e.tissue}</span>
       ${e.condition ? `<span><strong>Condition:</strong> ${e.condition}</span>` : ''}
-      ${e.iucn_status ? `<span><strong>IUCN:</strong> ${
-        e.iucn_url
-          ? `<a class="iucn-badge iucn-${e.iucn_status}" href="${e.iucn_url}" target="_blank" rel="noopener">${e.iucn_status}</a>`
-          : `<span class="iucn-badge iucn-${e.iucn_status}">${e.iucn_status}</span>`
-      }</span>` : ''}
       ${e.iucn_pop_trend ? `<span><strong>Trend:</strong> ${e.iucn_pop_trend}</span>` : ''}
     `;
     card.appendChild(meta);
