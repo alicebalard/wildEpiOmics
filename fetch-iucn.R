@@ -52,13 +52,17 @@ for (sp in species_names) {
     if (!is.null(assessments) && nrow(assessments) > 0) {
       latest <- assessments[assessments$latest == TRUE, ]
       if (nrow(latest) == 0) latest <- assessments[1, ]  # fallback to first
-      # Extract realm (systems): terrestrial / freshwater / marine
-      sid <- latest$sis_taxon_id[1]
+      # Extract realm from systems field in assessment
       realm <- tryCatch({
-        hab <- rl_habitats(id = sid, key = token)$result
-        systems <- unique(hab$system)
-        if (length(systems) > 0) paste(tolower(systems), collapse = ", ") else NA
-      }, error = function(e) NA)
+        sys <- latest$systems[1]
+        if (is.null(sys) || is.na(sys) || nchar(sys) == 0) NA_character_
+        else {
+          parts <- strsplit(sys, "[,;|/]+")[[1]]
+          parts <- trimws(tolower(parts))
+          parts <- parts[nchar(parts) > 0]
+          paste(parts, collapse = ", ")
+        }
+      }, error = function(e) NA_character_)
 
       results[[sp]] <- list(
         iucn_status    = latest$red_list_category_code[1],
