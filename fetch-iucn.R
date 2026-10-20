@@ -13,6 +13,8 @@
 library(rredlist)
 library(jsonlite)
 
+`%||%` <- function(a, b) if (!is.null(a) && length(a) > 0 && !is.na(a)) a else b
+
 token <- Sys.getenv("IUCN_REDLIST_KEY")
 if (nchar(token) == 0) stop("Set IUCN_REDLIST_KEY env var first")
 
@@ -34,15 +36,20 @@ for (sp in species_names) {
     next
   }
   tryCatch({
-    res <- rl_search(sp, key = token)$result
-    if (length(res) > 0) {
-      r <- res[[1]]
+    # rredlist >= 1.0.0 uses rl_species() (IUCN v4 API)
+    res <- rl_species(sp, key = token)
+    # rl_species returns a list; taxon info is in res$taxon, assessment in res$assessments
+    taxon <- res$taxon
+    assessment <- if (!is.null(res$assessments) && length(res$assessments) > 0)
+      res$assessments[[1]] else NULL
+    if (!is.null(taxon) && !is.null(assessment)) {
+      sis_id <- taxon$sis_id %||% taxon$taxonid
       results[[sp]] <- list(
-        iucn_status    = r$category,
-        iucn_pop_trend = r$population_trend,
-        iucn_url       = paste0("https://www.iucnredlist.org/species/", r$taxonid)
+        iucn_status    = assessment$red_list_category$code %||% assessment$category,
+        iucn_pop_trend = assessment$population_trend$description %||% assessment$population_trend,
+        iucn_url       = paste0("https://www.iucnredlist.org/species/", sis_id)
       )
-      cat("  OK", sp, ":", r$category, "(", r$population_trend, ")\n")
+      cat("  OK", sp, ":", results[[sp]]$iucn_status, "(", results[[sp]]$iucn_pop_trend, ")\n")
     } else {
       results[[sp]] <- NULL
       cat("  not found:", sp, "\n")
