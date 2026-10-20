@@ -37,7 +37,7 @@ for (sp in species_names) {
   }
   tryCatch({
     # rredlist >= 1.0.0 uses rl_species() (IUCN v4 API)
-    res <- rl_species(sp, key = token)
+    res <- rl_species(species = sp, key = token)
     # rl_species returns a list; taxon info is in res$taxon, assessment in res$assessments
     taxon <- res$taxon
     assessment <- if (!is.null(res$assessments) && length(res$assessments) > 0)
