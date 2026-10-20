@@ -15,8 +15,17 @@ library(jsonlite)
 
 `%||%` <- function(a, b) if (!is.null(a) && length(a) > 0 && !is.na(a)) a else b
 
+# Try loading token from .env file if not already set
+if (nchar(Sys.getenv("IUCN_REDLIST_KEY")) == 0 && file.exists(".env")) {
+  lines <- readLines(".env")
+  for (line in lines) {
+    if (grepl("^IUCN_REDLIST_KEY=", line)) {
+      Sys.setenv(IUCN_REDLIST_KEY = sub("^IUCN_REDLIST_KEY=", "", line))
+    }
+  }
+}
 token <- Sys.getenv("IUCN_REDLIST_KEY")
-if (nchar(token) == 0) stop("Set IUCN_REDLIST_KEY env var first")
+if (nchar(token) == 0) stop("Set IUCN_REDLIST_KEY in a .env file or as env var")
 
 # Read species names from the NCBI taxonomy cache
 taxonomy <- fromJSON("cache/taxonomy.json")
