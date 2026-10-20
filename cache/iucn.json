@@ -82,5 +82,10 @@
   "Lamprotornis superbus": {
     "iucn_status": "LC",
     "iucn_url": "https://www.iucnredlist.org/species/22710767/264231105"
+  },
+  "Pomatostomus ruficeps": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/22704992/254008192",
+    "iucn_realm": {}
   }
 }
