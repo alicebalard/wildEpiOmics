@@ -148,7 +148,11 @@ if (e.image) {
       <span><strong>N:</strong> ${e.individuals}</span>
       <span><strong>Tissue:</strong> ${e.tissue}</span>
       ${e.condition ? `<span><strong>Condition:</strong> ${e.condition}</span>` : ''}
-      ${e.iucn_status ? `<span><strong>IUCN:</strong> ${e.iucn_status}</span>` : ''}
+      ${e.iucn_status ? `<span><strong>IUCN:</strong> ${
+        e.iucn_url
+          ? `<a class="iucn-badge iucn-${e.iucn_status}" href="${e.iucn_url}" target="_blank" rel="noopener">${e.iucn_status}</a>`
+          : `<span class="iucn-badge iucn-${e.iucn_status}">${e.iucn_status}</span>`
+      }</span>` : ''}
       ${e.iucn_pop_trend ? `<span><strong>Trend:</strong> ${e.iucn_pop_trend}</span>` : ''}
     `;
     card.appendChild(meta);
