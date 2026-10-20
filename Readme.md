@@ -29,10 +29,9 @@ Without a gihub account, send ALL the following information to alice.cam.balard@
 - rights of the picture (optional, but needed if you upload a picture link)
 
 ## Info for maintainer (Alice)
-Workflow for new species:
-  1. Merge new study PR (CI build updates cache/taxonomy.json)
-  2. git pull
-  3. Rscript fetch-iucn.R  (fetches only new species, skips cached)
-  4. git add cache/iucn.json && git commit && git push
+Workflow for new species has to be done in local (Alice laptop or anyone with a IUCN token)
+  1. git pull
+  2. Rscript fetch-iucn.R  (fetches only new species, skips cached)
+  3. git add cache/iucn.json && git commit && git push
      
 Will need to be improved when automation
