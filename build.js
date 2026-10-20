@@ -158,30 +158,18 @@ out.order = foundOrder;
 // -----------------
 // IUCN: conservation status
 // -----------------
-async function enrichIUCN(speciesName) {
-  const token = process.env.IUCN_TOKEN;
-  if (!token || !speciesName) return {};
-  try {
-    const name = encodeURIComponent(speciesName);
-    // IUCN Red List API v3 — stable, uses token as query param
-    const { status, json } = await httpGetJson(
-      `https://apiv3.iucnredlist.org/api/v3/species/${name}?token=${token}`
-    );
-    console.log(`  IUCN v3 lookup for ${speciesName}: status=${status}`);
-    if (status !== 200 || !json?.result?.length) {
-      console.warn(`  IUCN v3 no result for ${speciesName}`);
-      return {};
-    }
-    const r = json.result[0];
-    return {
-      iucn_status:    r.category,
-      iucn_pop_trend: r.population_trend,
-      iucn_url:       `https://www.iucnredlist.org/species/${r.taxonid}`
-    };
-  } catch (e) {
-    console.warn(`IUCN failed for ${speciesName}:`, e.message);
-    return {};
-  }
+// Load IUCN cache (populated locally by fetch-iucn.js, committed to repo)
+const IUCN_CACHE_FILE = path.join(ROOT, "cache", "iucn.json");
+const iucnCache = fs.existsSync(IUCN_CACHE_FILE)
+  ? JSON.parse(fs.readFileSync(IUCN_CACHE_FILE, "utf8"))
+  : {};
+console.log(`📋 IUCN cache loaded: ${Object.keys(iucnCache).length} entries`);
+
+function enrichIUCN(speciesName) {
+  if (!speciesName) return {};
+  const entry = iucnCache[speciesName];
+  if (!entry) return {};
+  return entry;
 }
 
 // -----------------
@@ -300,7 +288,7 @@ for (const entry of data) {
 console.log("🔴 Fetching IUCN status and 🖼️  Wikipedia images...");
 for (const entry of data) {
   if (entry.species) {
-    const iucn = await enrichIUCN(entry.species);
+    const iucn = enrichIUCN(entry.species);
     if (iucn.iucn_status)    entry.iucn_status    = iucn.iucn_status;
     if (iucn.iucn_pop_trend) entry.iucn_pop_trend = iucn.iucn_pop_trend;
     if (iucn.iucn_url)       entry.iucn_url        = iucn.iucn_url;
