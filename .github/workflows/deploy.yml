@@ -9,7 +9,7 @@ on:
     types: [trigger-build]
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -41,6 +41,18 @@ jobs:
         run: npm run build
         env:
           IUCN_TOKEN: ${{ secrets.IUCN_TOKEN }}
+
+      - name: Commit updated taxonomy cache
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cache/taxonomy.json
+          if git diff --cached --quiet; then
+            echo "Taxonomy cache unchanged"
+          else
+            git commit -m "chore: update taxonomy cache [skip ci]"
+            git push
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
