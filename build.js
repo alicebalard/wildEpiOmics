@@ -198,22 +198,25 @@ async function enrichIUCN(speciesName) {
 // -----------------
 // Wikipedia: species image
 // -----------------
-async function fetchWikipediaImage(speciesName) {
+async function fetchSpeciesImage(speciesName) {
   if (!speciesName) return {};
+  // iNaturalist taxa API — returns photo URLs, not blocked by GitHub Actions proxy
   try {
-    const title = encodeURIComponent(speciesName.replace(/ /g, '_'));
-    // Use w/api.php (MediaWiki API) — less likely to be blocked than REST v1
-    const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${title}&prop=pageimages&format=json&pithumbsize=400&origin=*`;
-    const { status, json } = await httpGetJson(apiUrl);
-    if (status === 200 && json?.query?.pages) {
-      const page = Object.values(json.query.pages)[0];
-      if (page?.thumbnail?.source) {
-        return { image: page.thumbnail.source, image_credit: '© Wikimedia Commons' };
+    const q = encodeURIComponent(speciesName);
+    const { status, json } = await httpGetJson(
+      `https://api.inaturalist.org/v1/taxa?q=${q}&rank=species&per_page=1`
+    );
+    if (status === 200 && json?.results?.length) {
+      const taxon = json.results[0];
+      const photo = taxon.default_photo;
+      if (photo?.medium_url) {
+        const attribution = photo.attribution || '© iNaturalist contributors';
+        return { image: photo.medium_url, image_credit: attribution };
       }
     }
-    console.warn(`Wikipedia no image for ${speciesName}: status=${status}`);
+    console.warn(`iNaturalist no image for ${speciesName}: status=${status}`);
   } catch (e) {
-    console.warn(`Wikipedia image failed for ${speciesName}:`, e.message);
+    console.warn(`iNaturalist image failed for ${speciesName}:`, e.message);
   }
   return {};
 }
@@ -312,7 +315,7 @@ for (const entry of data) {
     if (iucn.iucn_pop_trend) entry.iucn_pop_trend = iucn.iucn_pop_trend;
     if (iucn.iucn_url)       entry.iucn_url        = iucn.iucn_url;
     if (!entry.image) {
-      const wiki = await fetchWikipediaImage(entry.species);
+      const wiki = await fetchSpeciesImage(entry.species);
       if (wiki.image) {
         entry.image        = wiki.image;
         entry.image_credit = wiki.image_credit;
