@@ -155,22 +155,8 @@ out.order = foundOrder;
   return out;
 }
 
-// -----------------
-// IUCN: conservation status
-// -----------------
-// Load IUCN cache (populated locally by fetch-iucn.js, committed to repo)
-const IUCN_CACHE_FILE = path.join(ROOT, "cache", "iucn.json");
-const iucnCache = fs.existsSync(IUCN_CACHE_FILE)
-  ? JSON.parse(fs.readFileSync(IUCN_CACHE_FILE, "utf8"))
-  : {};
-console.log(`📋 IUCN cache loaded: ${Object.keys(iucnCache).length} entries`);
-
-function enrichIUCN(speciesName) {
-  if (!speciesName) return {};
-  const entry = iucnCache[speciesName];
-  if (!entry) return {};
-  return entry;
-}
+// IUCN fields (iucn_status, iucn_pop_trend, iucn_url) are added directly
+// to each YAML entry by hand — no API call needed.
 
 // -----------------
 // Wikipedia: species image
@@ -284,20 +270,14 @@ for (const entry of data) {
     }
 }
 
-// 2. Enrich with IUCN status and Wikipedia images
-console.log("🔴 Fetching IUCN status and 🖼️  Wikipedia images...");
+// 2. Fetch species images from iNaturalist
+console.log("🖼️  Fetching species images (iNaturalist)...");
 for (const entry of data) {
-  if (entry.species) {
-    const iucn = enrichIUCN(entry.species);
-    if (iucn.iucn_status)    entry.iucn_status    = iucn.iucn_status;
-    if (iucn.iucn_pop_trend) entry.iucn_pop_trend = iucn.iucn_pop_trend;
-    if (iucn.iucn_url)       entry.iucn_url        = iucn.iucn_url;
-    if (!entry.image) {
-      const wiki = await fetchSpeciesImage(entry.species);
-      if (wiki.image) {
-        entry.image        = wiki.image;
-        entry.image_credit = wiki.image_credit;
-      }
+  if (entry.species && !entry.image) {
+    const wiki = await fetchSpeciesImage(entry.species);
+    if (wiki.image) {
+      entry.image        = wiki.image;
+      entry.image_credit = wiki.image_credit;
     }
     await new Promise(r => setTimeout(r, 300));
   }
