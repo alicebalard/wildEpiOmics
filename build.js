@@ -274,6 +274,22 @@ for (const entry of data) {
     }
 }
 
+// Write taxonomy cache so fetch-iucn.R always has up-to-date species names
+ensureDir(path.join(ROOT, "cache"));
+const taxCache = {};
+for (const entry of data) {
+  if (entry.taxid && entry.species) {
+    taxCache[entry.taxid] = {
+      species: entry.species,
+      order: entry.order,
+      class: entry.class,
+      common_name: entry.common_name
+    };
+  }
+}
+fs.writeFileSync(path.join(ROOT, "cache", "taxonomy.json"), JSON.stringify(taxCache, null, 2), "utf8");
+console.log(`📋 Taxonomy cache updated: ${Object.keys(taxCache).length} taxa`);
+
 // 2. Apply IUCN cache and fetch images
 for (const entry of data) {
   if (entry.species && iucnCache[entry.species]) {
