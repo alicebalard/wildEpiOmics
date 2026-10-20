@@ -210,7 +210,8 @@ async function fetchSpeciesImage(speciesName) {
       const taxon = json.results[0];
       const photo = taxon.default_photo;
       if (photo?.medium_url) {
-        const attribution = photo.attribution || '© iNaturalist contributors';
+        const rawAttr = photo.attribution || '© iNaturalist contributors';
+        const attribution = rawAttr.replace(/,\s*uploaded by .*/i, '');
         return { image: photo.medium_url, image_credit: attribution };
       }
     }
