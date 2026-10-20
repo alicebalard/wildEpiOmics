@@ -34,4 +34,5 @@ Workflow for new species:
   2. git pull
   3. Rscript fetch-iucn.R  (fetches only new species, skips cached)
   4. git add cache/iucn.json && git commit && git push
+     
 Will need to be improved when automation
