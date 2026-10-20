@@ -23,7 +23,9 @@ jobs:
           r-version: '4.4'
 
       - name: Install rredlist and jsonlite
-        run: Rscript -e 'install.packages(c("rredlist","jsonlite"), repos="https://cloud.r-project.org")'
+        run: |
+          Rscript -e 'install.packages(c("rredlist","jsonlite"), repos=c(ropensci="https://ropensci.r-universe.dev", CRAN="https://cloud.r-project.org"))'
+          Rscript -e 'library(rredlist); library(jsonlite); cat("packages OK\n")'
 
       - name: Fetch IUCN status for new species
         env:
