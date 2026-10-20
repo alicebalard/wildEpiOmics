@@ -27,3 +27,11 @@ Without a gihub account, send ALL the following information to alice.cam.balard@
 - main question of the study (optional)
 - link to a picture of the species (optional; e.g. Wikipedia picture, right click, "copy image address"; if not, a picture and attribution will automatically be fetched from iNaturalist)
 - rights of the picture (optional, but needed if you upload a picture link)
+
+## Info for maintainer (Alice)
+Workflow for new species:
+  1. Merge new study PR (CI build updates cache/taxonomy.json)
+  2. git pull
+  3. Rscript fetch-iucn.R  (fetches only new species, skips cached)
+  4. git add cache/iucn.json && git commit && git push
+Will need to be improved when automation
