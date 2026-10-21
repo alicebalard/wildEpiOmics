@@ -66,8 +66,8 @@ body:
     id: location
     attributes:
       label: geographical location
-      description: Where the animals were sampled, e.g. `Serengeti, Tanzania` or `Fowlers Gap, New South Wales, Australia`
-      placeholder: "Country or region"
+      description: Where the animals were sampled. Separate multiple sites with a comma, e.g. `Fowlers Gap, New South Wales, Australia` or `Norway, Italy`
+      placeholder: "Country, region, or field site"
     validations:
       required: false
 
@@ -89,24 +89,6 @@ body:
     validations:
       required: true
   
-  - type: input
-    id: image_url
-    attributes:
-      label: Image URL (optional — leave blank for automatic fetch)
-      description: Leave blank to auto-fetch from iNaturalist. Or paste a direct image URL (right-click image → "copy image address").
-      placeholder: "https://example.org/path/to/image.jpg"
-    validations:
-      required: false
-
-  - type: input
-    id: image_credit
-    attributes:
-      label: Image credit (only if you filled Image URL above)
-      description: "Author name + license, e.g. 'Alison Copeland, CC BY 4.0'"
-      placeholder: "Alison Copeland, CC BY 4.0"
-    validations:
-      required: false
-
   - type: textarea
     id: abstract
     attributes:

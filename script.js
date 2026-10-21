@@ -165,8 +165,8 @@ if (e.image) {
       <span><strong>Method:</strong> ${e.method}</span>
       <span><strong>N:</strong> ${e.individuals}</span>
       <span><strong>Tissue:</strong> ${e.tissue}</span>
-      ${e.capture_years ? `<span><strong>Year(s) sampled:</strong> ${e.capture_years}</span>` : ''}
-      ${e.location ? `<span><strong>Location:</strong> ${e.location}</span>` : ''}
+      ${e.capture_years ? `<span><strong>Years:</strong> ${e.capture_years}</span>` : ''}
+      ${e.location ? e.location.split(',').map(l => `<span><strong>Location:</strong> ${l.trim()}</span>`).join('') : ''}
       ${e.condition ? `<span><strong>Condition:</strong> ${e.condition}</span>` : ''}
       ${e.iucn_pop_trend ? `<span><strong>Trend:</strong> ${e.iucn_pop_trend}</span>` : ''}
     `;
