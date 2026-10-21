@@ -34,12 +34,17 @@ get_year <- function(doi) {
 }
 entries$year <- sapply(entries$doi, get_year)
 
-coloursMet <- c("#0072B2", "#E69F00", "#009E73", "#CC79A7")
-names(coloursMet) <- unique(entries$method)
+all_methods <- unique(trimws(unlist(strsplit(entries$method, "\\s*\\+\\s*"))))
+coloursMet <- setNames(
+  c("#0072B2", "#E69F00", "#009E73", "#CC79A7", "#F0E442", "#D55E00")[seq_along(all_methods)],
+  all_methods
+)
 
 p1 <- entries |>
   filter(!is.na(year)) |>
   mutate(year = as.integer(year)) |>
+  separate_longer_delim(method, delim = regex("\\s*\\+\\s*")) |>  # split on +
+  mutate(method = trimws(method)) |>
   count(year, method) |>
   ggplot(aes(x = year, y = n, fill = method)) +
   geom_col(position = position_dodge(preserve = "single")) +
@@ -48,7 +53,7 @@ p1 <- entries |>
   labs(x = "Publication year", y = "Number of studies", fill = "Method") +
   theme_minimal(base_size = 13) +
   theme(
-    axis.text.x      = element_text(angle = 45, hjust = 1),
+    axis.text.x        = element_text(angle = 45, hjust = 1),
     panel.grid.major.x = element_blank()
   )
 
