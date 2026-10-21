@@ -24,6 +24,9 @@ jobs:
         with:
           r-version: '4.4'
 
+      - name: Install system dependencies
+        run: sudo apt-get install -y libcurl4-openssl-dev libssl-dev
+
       - name: Install rredlist and jsonlite
         run: |
           Rscript -e 'install.packages(c("rredlist","jsonlite"), repos=c(ropensci="https://ropensci.r-universe.dev", CRAN="https://cloud.r-project.org"))'
