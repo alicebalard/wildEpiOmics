@@ -56,8 +56,6 @@ jobs:
               const capture_years = (body.match(H("(?:year\\(s\\) of capture|capture_years)")) || [])[1] || "";
               const location_raw = (body.match(/###\s*geographical location\s*[\r\n]+([^\r\n]*)/i) || [])[1] || "";
               const location = location_raw.trim();
-              const realm_raw = (body.match(/###\s*realm\s*[\r\n]+([^\r\n]*)/i) || [])[1] || "";
-              const realm = realm_raw.trim();
 
               const image_url_raw = (body.match(H("(?:Image URL|image_url)")) || [])[1] || "";
               const image_url = image_url_raw.replace(/\[.*?\]\((.*?)\)/, '$1').replace(/\s*\[[^\]]*\]\s*/, '').trim();
@@ -87,8 +85,7 @@ jobs:
               if (method) yamlContent += `\nmethod: ${method}`;
               if (capture_years) yamlContent += `\ncapture_years: "${capture_years}"`;
               if (location) yamlContent += `\nlocation: "${location}"`;
-              if (realm) yamlContent += `\nrealm: ${realm}`;
-              if (condition) yamlContent += `\ncondition: "${condition}"`;
+if (condition) yamlContent += `\ncondition: "${condition}"`;
               if (image_url) yamlContent += `\nimage: ${image_url}`;
               if (image_credit) yamlContent += `\nimage_credit: "${image_credit}"`;
               if (notes) yamlContent += `\nnotes: |\n  ${notes.split('\n').map(line => '  ' + line.trim()).join('\n')}`;
