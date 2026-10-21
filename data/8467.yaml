@@ -4,8 +4,7 @@ individuals: 40
 data_url: https://www.ncbi.nlm.nih.gov/sra/PRJEB75968
 tissue: blood
 method: WGBS
-image: https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Loggerhead_sea_turtle.jpg/1280px-Loggerhead_sea_turtle.jpg
-image_credit: "ukanda, CC BY 2.0"
+location: "Cape Verde"
 condition: early-life adversity
 notes: |
     Environmental effect (early-life adversity) on DNA methylation; Functional relevance of DNA methylation.

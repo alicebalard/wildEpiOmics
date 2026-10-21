@@ -1,0 +1,112 @@
+{
+  "Callorhinchus milii": {
+    "temp_min_C": 8.1,
+    "temp_max_C": 21.6,
+    "source": "worldclim_country_centroids"
+  },
+  "Salvelinus alpinus": {
+    "temp_min_C": -25.7,
+    "temp_max_C": 14.6,
+    "source": "worldclim_country_centroids"
+  },
+  "Rhinella marina": {
+    "temp_min_C": 5.3,
+    "temp_max_C": 27.9,
+    "source": "worldclim_country_centroids"
+  },
+  "Caretta caretta": {
+    "temp_min_C": 5.3,
+    "temp_max_C": 28.7,
+    "source": "worldclim_country_centroids"
+  },
+  "Chelonia mydas": {
+    "temp_min_C": 3.3,
+    "temp_max_C": 28.9,
+    "source": "worldclim_country_centroids"
+  },
+  "Phasianus colchicus": {
+    "temp_min_C": -11.4,
+    "temp_max_C": 25.8,
+    "source": "worldclim_country_centroids"
+  },
+  "Parus major": {
+    "temp_min_C": -11.4,
+    "temp_max_C": 27.7,
+    "source": "worldclim_country_centroids"
+  },
+  "Pomatostomus ruficeps": {
+    "temp_min_C": 21.6,
+    "temp_max_C": 21.6,
+    "source": "worldclim_country_centroids"
+  },
+  "Ornithorhynchus anatinus": {
+    "temp_min_C": 21.6,
+    "temp_max_C": 21.6,
+    "source": "worldclim_country_centroids"
+  },
+  "Papio cynocephalus": {
+    "temp_min_C": 20.5,
+    "temp_max_C": 27.5,
+    "source": "worldclim_country_centroids"
+  },
+  "Ursus arctos": {
+    "temp_min_C": -11.4,
+    "temp_max_C": 25.1,
+    "source": "worldclim_country_centroids"
+  },
+  "Ailuropoda melanoleuca": {
+    "temp_min_C": 5.7,
+    "temp_max_C": 5.7,
+    "source": "worldclim_country_centroids"
+  },
+  "Crocuta crocuta": {
+    "temp_min_C": 17.6,
+    "temp_max_C": 28.9,
+    "source": "worldclim_country_centroids"
+  },
+  "Monodelphis domestica": {
+    "temp_min_C": 16.7,
+    "temp_max_C": 25.6,
+    "source": "worldclim_country_centroids"
+  },
+  "Corvus corone": {
+    "temp_min_C": -25.7,
+    "temp_max_C": 24.4,
+    "source": "worldclim_country_centroids"
+  },
+  "Gambusia affinis": {
+    "temp_min_C": -8.1,
+    "temp_max_C": 16.9,
+    "source": "worldclim_country_centroids"
+  },
+  "Alligator sinensis": {
+    "temp_min_C": 5.7,
+    "temp_max_C": 5.7,
+    "source": "worldclim_country_centroids"
+  },
+  "Lynx canadensis": {
+    "temp_min_C": -8.1,
+    "temp_max_C": 8,
+    "source": "worldclim_country_centroids"
+  },
+  "Gasterosteus aculeatus": {
+    "temp_min_C": -11.4,
+    "temp_max_C": 23.2,
+    "source": "worldclim_country_centroids"
+  },
+  "Tachycineta bicolor": {
+    "temp_min_C": -25.7,
+    "temp_max_C": 26.7,
+    "source": "worldclim_country_centroids"
+  },
+  "Mustela nigripes": {
+    "temp_min_C": -8.1,
+    "temp_max_C": 16.9,
+    "source": "worldclim_country_centroids"
+  },
+  "Lamprotornis superbus": {
+    "temp_min_C": 21.9,
+    "temp_max_C": 27.8,
+    "source": "worldclim_country_centroids"
+  }
+}

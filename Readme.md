@@ -1,5 +1,5 @@
 [![Build & Deploy](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/deploy.yml)
-[![Parse Reviewed Entries](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parse-reviewed.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parse-reviewed.yml)
+[![Parse Reviewed Entries](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parsereviewed.yml/badge.svg)](https://github.com/alicebalard/wildEpiOmics/actions/workflows/parsereviewed.yml)
 
 ![Study count](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alicebalard/wildEpiOmics/main/.meta/study_count.json)
 ![Last deploy](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alicebalard/wildEpiOmics/main/.meta/last_deploy.json)
@@ -25,5 +25,13 @@ Without a gihub account, send ALL the following information to alice.cam.balard@
 - method (e.g. `RRBS, WGBS...)
 - number of sequenced individuals (e.g. 10, 15...)
 - main question of the study (optional)
-- link to a picture of the species (optional; e.g. Wikipedia picture, right click, "copy image address")
+- link to a picture of the species (optional; e.g. Wikipedia picture, right click, "copy image address"; if not, a picture and attribution will automatically be fetched from iNaturalist)
 - rights of the picture (optional, but needed if you upload a picture link)
+
+## Info for maintainer (Alice)
+Workflow for new species has to be done in local (Alice laptop or anyone with a IUCN token)
+  1. git pull
+  2. Rscript fetch-iucn.R  (fetches only new species, skips cached)
+  3. git add cache/iucn.json && git commit && git push
+     
+Will need to be improved when automation

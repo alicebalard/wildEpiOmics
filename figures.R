@@ -16,6 +16,8 @@ library(terra)
 library(tidyr)
 library(tidygeocoder)
 library(patchwork)
+library(cowplot)
+library(tidygeocoder)
 
 ####################
 ## Method by year ##
@@ -72,24 +74,24 @@ cache <- if (file.exists(cache_file)) fromJSON(cache_file, simplifyVector = FALS
 
 for (sp in species_list) {
   if (!is.null(cache[[sp]])) { cat("  (cached)", sp, "\n"); next }
-
+  
   cat("Fetching:", sp, "\n")
   parts <- strsplit(sp, " ")[[1]]
-
+  
   res <- tryCatch(
     rl_species_latest(genus = parts[1], species = parts[2], key = token),
     error = function(e) { cat("  ERROR:", conditionMessage(e), "\n"); NULL }
   )
-
+  
   if (is.null(res)) { cache[[sp]] <- list(); Sys.sleep(0.5); next }
-
+  
   countries    <- tryCatch(sort(unique(res$locations$code)),                    error = \(e) NULL)
   realm        <- tryCatch(tolower(paste(res$systems$description$en, collapse = ", ")), error = \(e) NULL)
   elev_low     <- tryCatch(res$supplementary_info$lower_elevation_limit,        error = \(e) NULL)
   elev_high    <- tryCatch(res$supplementary_info$upper_elevation_limit,        error = \(e) NULL)
   habitat_text <- tryCatch(res$documentation$habitats,                          error = \(e) NULL)
   range_text   <- tryCatch(res$documentation$range,                             error = \(e) NULL)
-
+  
   cache[[sp]] <- list(
     countries    = countries,
     realm        = realm,
@@ -153,9 +155,15 @@ locs_geo <- locs_geo |> filter(!is.na(lon), !is.na(lat))
 p2 <- ggplot(map_data) +
   geom_sf(aes(fill = n_species), colour = "white", linewidth = 0.15) +
   scale_fill_viridis_c(
-    option   = "mako", direction = -1,
+    option = "mako", direction = -1,
     na.value = "#e8e8e8",
-    name     = "N species\nstudied"
+    name = "N species\nstudied"
+  ) +
+  geom_point(
+    data = locs_geo |> filter(!is.na(lon)),
+    aes(x = lon, y = lat),
+    colour = "white", fill = "#e8272c",
+    shape = 21, size = 2.5, stroke = 0.6
   ) +
   geom_point(
     data  = locs_geo,
@@ -166,13 +174,11 @@ p2 <- ggplot(map_data) +
   coord_sf(expand = FALSE) +
   labs(
     title    = "Geographic distribution of wild epigenomics study species",
-    subtitle = "Based on IUCN range data · red dots = sampling locations",
-    caption  = "Colour = number of study species native to each country"
-  ) +
+    subtitle = "Based on IUCN range data · red dots = sampling locations") +
   theme_void(base_size = 12) +
   theme(
-    plot.title    = element_text(face = "bold", margin = margin(b = 4)),
-    plot.subtitle = element_text(colour = "grey40"),
+    plot.title      = element_text(face = "bold", margin = margin(b = 4)),
+    plot.subtitle   = element_text(colour = "grey40"),
     legend.position = "right"
   )
 
@@ -195,7 +201,7 @@ parse_temp_text <- function(txt) {
   if (length(txt) == 0 || all(is.na(txt)) || all(nchar(na.omit(txt)) == 0)) return(NULL)
   txt <- paste(na.omit(txt), collapse = " ")
   m <- str_match_all(txt,
-    "([-−]?\\d+(?:\\.\\d+)?)\\s*(?:to|–|-|and)\\s*([-−]?\\d+(?:\\.\\d+)?)\\s*°?\\s*C")[[1]]
+                     "([-−]?\\d+(?:\\.\\d+)?)\\s*(?:to|–|-|and)\\s*([-−]?\\d+(?:\\.\\d+)?)\\s*°?\\s*C")[[1]]
   if (nrow(m) == 0) return(NULL)
   list(
     temp_min_C = min(as.numeric(gsub("−", "-", m[, 2]))),
@@ -211,9 +217,9 @@ for (sp in names(cache)) {
   if (!is.null(temp_cache[[sp]])) { cat("  (cached)", sp, "\n"); next }
   entry <- cache[[sp]]
   cat("Processing:", sp, "\n")
-
+  
   result <- parse_temp_text(entry$habitat_text) %||% parse_temp_text(entry$range_text)
-
+  
   if (is.null(result)) {
     countries <- as.character(unlist(entry$countries))
     countries[is.na(countries)] <- "NA"
@@ -229,7 +235,7 @@ for (sp in names(cache)) {
         )
     }
   }
-
+  
   temp_cache[[sp]] <- if (!is.null(result)) result else list()
 }
 
@@ -265,16 +271,20 @@ p3 <- temp_df |>
        title    = "Temperature range of study species",
        subtitle = "Based on WorldClim at country level · sorted by minimum temperature") +
   theme_minimal(base_size = 12) +
-  theme(panel.grid.major.y = element_blank(),
-        plot.title = element_text(face = "bold"))
+  theme(
+    plot.title    = element_text(face = "bold", margin = margin(b = 4), hjust = 0.5),
+    plot.subtitle = element_text(colour = "grey40", hjust = 0.5),
+    legend.position = "right"
+  )
 
 ####################
 ## Combined figure ##
 ####################
 
-(p1 / p2 / p3) +
+plot <- cowplot::plot_grid(
+  p1, p2, p3, nrow = 3, labels = c("A", "B", "C")) +
   plot_annotation(
-    title   = "Wild epigenomics catalog — overview",
-    theme   = theme(plot.title = element_text(size = 16, face = "bold"))
-  ) &
-  theme(plot.margin = margin(8, 8, 8, 8))
+    title   = paste0("Wild epigenomics catalog: overview on the ", Sys.Date()),
+    theme   = theme(plot.title = element_text(size = 16, face = "bold")))
+
+ggsave("plot.pdf", plot, width = 8, height = 12)

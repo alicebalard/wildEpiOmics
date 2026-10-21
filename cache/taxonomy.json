@@ -5,10 +5,123 @@
     "class": "Chondrichthyes",
     "common_name": "elephant shark"
   },
+  "8036": {
+    "species": "Salvelinus alpinus",
+    "order": "Salmoniformes",
+    "class": "Actinopteri",
+    "common_name": "Arctic char"
+  },
+  "8386": {
+    "species": "Rhinella marina",
+    "order": "Anura",
+    "class": "Amphibia",
+    "common_name": "marine toad"
+  },
+  "8467": {
+    "species": "Caretta caretta",
+    "order": "Testudines",
+    "class": "Reptilia",
+    "common_name": "loggerhead turtle"
+  },
+  "9054": {
+    "species": "Phasianus colchicus",
+    "order": "Galliformes",
+    "class": "Aves",
+    "common_name": "ring-necked pheasant"
+  },
+  "9157": {
+    "species": "Parus major",
+    "order": "Passeriformes",
+    "class": "Aves",
+    "common_name": "Great Tit"
+  },
+  "9176": {
+    "species": "Pomatostomus ruficeps",
+    "order": "Passeriformes",
+    "class": "Aves",
+    "common_name": "chestnut-crowned babbler"
+  },
+  "9258": {
+    "species": "Ornithorhynchus anatinus",
+    "order": "Monotremata",
+    "class": "Mammalia",
+    "common_name": "platypus"
+  },
+  "9556": {
+    "species": "Papio cynocephalus",
+    "order": "Primates",
+    "class": "Mammalia",
+    "common_name": "Yellow baboon"
+  },
+  "9644": {
+    "species": "Ursus arctos",
+    "order": "Carnivora",
+    "class": "Mammalia",
+    "common_name": "brown bear"
+  },
+  "9646": {
+    "species": "Ailuropoda melanoleuca",
+    "order": "Carnivora",
+    "class": "Mammalia",
+    "common_name": "giant panda"
+  },
+  "9678": {
+    "species": "Crocuta crocuta",
+    "order": "Carnivora",
+    "class": "Mammalia",
+    "common_name": "spotted hyena"
+  },
+  "13616": {
+    "species": "Monodelphis domestica",
+    "order": "Didelphimorphia",
+    "class": "Mammalia",
+    "common_name": "gray short-tailed opossum"
+  },
+  "30422": {
+    "species": "Corvus corone",
+    "order": "Passeriformes",
+    "class": "Aves",
+    "common_name": "carrion crow"
+  },
+  "33528": {
+    "species": "Gambusia affinis",
+    "order": "Cyprinodontiformes",
+    "class": "Actinopteri",
+    "common_name": "western mosquitofish"
+  },
+  "38654": {
+    "species": "Alligator sinensis",
+    "order": "Crocodylia",
+    "class": "Reptilia",
+    "common_name": "Chinese alligator"
+  },
   "61383": {
     "species": "Lynx canadensis",
     "order": "Carnivora",
     "class": "Mammalia",
     "common_name": "Canada lynx"
+  },
+  "69293": {
+    "species": "Gasterosteus aculeatus",
+    "order": "Perciformes",
+    "class": "Actinopteri",
+    "common_name": "three-spined stickleback"
+  },
+  "72873": {
+    "species": "Tachycineta bicolor",
+    "order": "Passeriformes",
+    "class": "Aves",
+    "common_name": "Tree swallow"
+  },
+  "77151": {
+    "species": "Mustela nigripes",
+    "order": "Carnivora",
+    "class": "Mammalia",
+    "common_name": "black-footed ferret"
+  },
+  "245042": {
+    "species": "Lamprotornis superbus",
+    "order": "Passeriformes",
+    "class": "Aves"
   }
 }
