@@ -291,4 +291,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   populateFilters();
   render();
+
+  // Mobile filter toggle
+  const $toggle = document.getElementById('filters-toggle');
+  const $body   = document.getElementById('filters-body');
+  if ($toggle && $body) {
+    $toggle.addEventListener('click', () => {
+      const open = $body.classList.toggle('open');
+      $toggle.textContent = open ? 'Hide ▲' : 'Show ▼';
+      $toggle.setAttribute('aria-expanded', open);
+    });
+  }
 });

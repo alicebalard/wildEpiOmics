@@ -8,8 +8,14 @@
 </head>
 <body>
   <div class="layout">
-    <aside class="filters" aria-label="Filters">
-      <h2>Filters</h2>
+    <aside class="filters" id="filters-panel" aria-label="Filters">
+      <div class="filters-header">
+        <h2>Filters</h2>
+        <button class="filters-toggle" id="filters-toggle" aria-expanded="false" aria-controls="filters-body">
+          Show ▼
+        </button>
+      </div>
+      <div class="filters-body" id="filters-body">
 
       <label>Method
         <select id="f-method" multiple aria-label="Filter by method"></select>
@@ -46,6 +52,7 @@
       <button id="btn-download-bib">Download BibTeX of selected</button>
       <button id="btn-download-csv">Download CSV of selected</button>
       <small id="sel-count" aria-live="polite"></small>
+      </div><!-- /filters-body -->
     </aside>
 
     <main class="content">
