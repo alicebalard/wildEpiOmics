@@ -4,8 +4,7 @@ individuals: 67
 data_url: https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=901184
 tissue: whole_organism
 method: RRBS
-image: https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Canetoadfemale.jpg/1280px-Canetoadfemale.jpg
-image_credit: "Benjamint444, GFDL 1.2"
+location: "Australia"
 condition: early-life adversity
 notes: |
     Environmental effect (early-life adversity) on DNA methylation; Functional relevance of DNA methylation.

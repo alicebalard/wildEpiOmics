@@ -14,6 +14,7 @@ library(sf)
 library(geodata)
 library(terra)
 library(cowplot)
+library(tidygeocoder)
 
 ####################
 ## Method by year ##
@@ -121,23 +122,37 @@ country_counts <- country_df |>
 world     <- ne_countries(scale = "medium", returnclass = "sf") |> select(iso_a2, geometry)
 map_data  <- world |> left_join(country_counts, by = "iso_a2")
 
+# ── Geocode sampling locations from YAML entries ──────────────────────────────
+locs <- entries |>
+  filter(!is.na(location) & nchar(location) > 0) |>
+  select(species = taxid, location) |>   # taxid as id since species may repeat
+  distinct(location, .keep_all = TRUE)
+
+locs_geo <- locs |>
+  geocode(address = location, method = "osm", lat = lat, long = lon)
+
+# ── Add points to the map ─────────────────────────────────────────────────────
 p2 <- ggplot(map_data) +
   geom_sf(aes(fill = n_species), colour = "white", linewidth = 0.15) +
   scale_fill_viridis_c(
-    option   = "mako", direction = -1,
+    option = "mako", direction = -1,
     na.value = "#e8e8e8",
-    name     = "N species\nstudied"
+    name = "N species\nstudied"
+  ) +
+  geom_point(
+    data = locs_geo |> filter(!is.na(lon)),
+    aes(x = lon, y = lat),
+    colour = "white", fill = "#e8272c",
+    shape = 21, size = 2.5, stroke = 0.6
   ) +
   coord_sf(expand = FALSE) +
   labs(
     title    = "Geographic distribution of wild epigenomics study species",
-    subtitle = "Based on IUCN range data",
-    caption  = "Colour = number of study species native to each country"
-  ) +
+    subtitle = "Based on IUCN range data · red dots = sampling locations") +
   theme_void(base_size = 12) +
   theme(
-    plot.title    = element_text(face = "bold", margin = margin(b = 4)),
-    plot.subtitle = element_text(colour = "grey40"),
+    plot.title      = element_text(face = "bold", margin = margin(b = 4)),
+    plot.subtitle   = element_text(colour = "grey40"),
     legend.position = "right"
   )
 
@@ -231,8 +246,8 @@ p3 <- temp_df |>
        subtitle = "Based on WorldClim at country level · sorted by minimum temperature") +
   theme_minimal(base_size = 12) +
   theme(
-    plot.title    = element_text(face = "bold", margin = margin(b = 4)),
-    plot.subtitle = element_text(colour = "grey40"),
+    plot.title    = element_text(face = "bold", margin = margin(b = 4), hjust = 0.5),
+    plot.subtitle = element_text(colour = "grey40", hjust = 0.5),
     legend.position = "right"
   )
 
