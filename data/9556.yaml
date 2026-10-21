@@ -4,7 +4,6 @@ individuals: 69
 data_url: https://www.ncbi.nlm.nih.gov/sra/?term=SRP058411
 tissue: blood
 method: RRBS
-image: https://upload.wikimedia.org/wikipedia/commons/d/de/Papio_cynocephalus02.jpg
-image_credit: "Alexander Landfair, Public Domain"
+location: "Kenya"
 condition: resource
 notes: Environmental effect (resource) on DNA methylation; temporal dynamics of DNA methylation

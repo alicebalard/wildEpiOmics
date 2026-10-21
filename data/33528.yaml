@@ -4,8 +4,7 @@ individuals: 12
 data_url: https://www.ncbi.nlm.nih.gov/sra/PRJNA991285
 tissue: muscle
 method: WGBS+RNAseq
-image: https://upload.wikimedia.org/wikipedia/commons/5/5c/Mosquitofish.jpg
-image_credit: "Public Domain"
+location: "Israel"
 contion: temperature
 notes: |
     Environmental effect on gene expression and methylation; Multi-omics overlap analysis.

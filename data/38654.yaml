@@ -4,8 +4,7 @@ individuals: 4
 data_url: https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA1088816
 tissue: muscle
 method: WGBS
-image: https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/ChineseAlligator15.JPG/1280px-ChineseAlligator15.JPG
-image_credit: "Greg Hume, CC BY-SA 3.0"
+location: "China"
 condition: hibernation
 notes: |
     Hibernation-related methylation; Functional relevance of hibernation-related methylation
