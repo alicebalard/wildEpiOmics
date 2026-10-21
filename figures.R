@@ -177,8 +177,8 @@ p2 <- ggplot(map_data) +
     subtitle = "Based on IUCN range data · red dots = sampling locations") +
   theme_void(base_size = 12) +
   theme(
-    plot.title      = element_text(face = "bold", margin = margin(b = 4)),
-    plot.subtitle   = element_text(colour = "grey40"),
+    plot.title      = element_text(face = "bold", margin = margin(b = 4), hjust = 0.5),
+    plot.subtitle = element_text(colour = "grey40", hjust = 0.5),
     legend.position = "right"
   )
 
