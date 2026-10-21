@@ -85,7 +85,7 @@ jobs:
               if (method) yamlContent += `\nmethod: ${method}`;
               if (capture_years) yamlContent += `\ncapture_years: "${capture_years}"`;
               if (location) yamlContent += `\nlocation: "${location}"`;
-if (condition) yamlContent += `\ncondition: "${condition}"`;
+              if (condition) yamlContent += `\ncondition: "${condition}"`;
               if (image_url) yamlContent += `\nimage: ${image_url}`;
               if (image_credit) yamlContent += `\nimage_credit: "${image_credit}"`;
               if (notes) yamlContent += `\nnotes: |\n  ${notes.split('\n').map(line => '  ' + line.trim()).join('\n')}`;
