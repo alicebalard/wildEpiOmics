@@ -24,36 +24,35 @@ body { margin: 0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sa
 .actions { margin-top: .5rem; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
 .link { color: var(--accent); text-decoration: none; }
 .link:hover { text-decoration: underline; }
-/* ── Mobile toggle button (hidden on desktop) ── */
+/* ── Collapsible filter panel (desktop + mobile) ── */
 .filters-header { display: flex; align-items: center; justify-content: space-between; }
-.filters-toggle { display: none; }
+
+.filters-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .35rem .7rem;
+  font-size: .85rem;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: .25rem;
+  cursor: pointer;
+  width: auto;
+  margin: 0;
+}
+
+.filters-body {
+  display: none;
+  margin-top: .5rem;
+}
+.filters-body.open {
+  display: block;
+}
 
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; }
   .filters { border-right: none; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
-
-  .filters-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: .3rem;
-    padding: .35rem .7rem;
-    font-size: .85rem;
-    background: var(--accent);
-    color: #fff;
-    border: 0;
-    border-radius: .25rem;
-    cursor: pointer;
-    width: auto;
-    margin: 0;
-  }
-
-  .filters-body {
-    display: none;
-    margin-top: .5rem;
-  }
-  .filters-body.open {
-    display: block;
-  }
 }
 
 .common-name {

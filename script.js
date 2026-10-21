@@ -292,10 +292,13 @@ document.addEventListener('DOMContentLoaded', function() {
   populateFilters();
   render();
 
-  // Mobile filter toggle
+  // Collapsible filter panel (starts open)
   const $toggle = document.getElementById('filters-toggle');
   const $body   = document.getElementById('filters-body');
   if ($toggle && $body) {
+    $body.classList.add('open');
+    $toggle.textContent = 'Hide ▲';
+    $toggle.setAttribute('aria-expanded', true);
     $toggle.addEventListener('click', () => {
       const open = $body.classList.toggle('open');
       $toggle.textContent = open ? 'Hide ▲' : 'Show ▼';
