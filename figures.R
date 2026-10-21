@@ -13,6 +13,8 @@ library(rnaturalearthdata)
 library(sf)
 library(geodata)
 library(terra)
+library(tidyr)
+library(tidygeocoder)
 library(patchwork)
 
 ####################
@@ -121,6 +123,33 @@ country_counts <- country_df |>
 world     <- ne_countries(scale = "medium", returnclass = "sf") |> select(iso_a2, geometry)
 map_data  <- world |> left_join(country_counts, by = "iso_a2")
 
+# ── Geocode sampling locations (split on comma for multiple) ─────────────────
+loc_cache_file <- "cache/locations_geocoded.rds"
+loc_input <- entries |>
+  filter(!is.na(location) & nchar(location) > 0) |>
+  select(taxid, location) |>
+  rowwise() |>
+  mutate(loc_split = list(trimws(strsplit(location, ",")[[1]]))) |>
+  tidyr::unnest(loc_split) |>
+  filter(nchar(loc_split) > 0) |>
+  distinct(loc_split) |>
+  rename(address = loc_split)
+
+if (file.exists(loc_cache_file)) {
+  locs_geo <- readRDS(loc_cache_file)
+  new_locs <- loc_input |> filter(!address %in% locs_geo$address)
+  if (nrow(new_locs) > 0) {
+    new_geo  <- new_locs |> geocode(address = address, method = "osm", lat = lat, long = lon)
+    locs_geo <- bind_rows(locs_geo, new_geo)
+    saveRDS(locs_geo, loc_cache_file)
+  }
+} else {
+  locs_geo <- loc_input |> geocode(address = address, method = "osm", lat = lat, long = lon)
+  saveRDS(locs_geo, loc_cache_file)
+}
+
+locs_geo <- locs_geo |> filter(!is.na(lon), !is.na(lat))
+
 p2 <- ggplot(map_data) +
   geom_sf(aes(fill = n_species), colour = "white", linewidth = 0.15) +
   scale_fill_viridis_c(
@@ -128,10 +157,16 @@ p2 <- ggplot(map_data) +
     na.value = "#e8e8e8",
     name     = "N species\nstudied"
   ) +
+  geom_point(
+    data  = locs_geo,
+    aes(x = lon, y = lat),
+    colour = "white", fill = "#e8272c",
+    shape = 21, size = 2.5, stroke = 0.6
+  ) +
   coord_sf(expand = FALSE) +
   labs(
     title    = "Geographic distribution of wild epigenomics study species",
-    subtitle = "Based on IUCN range data",
+    subtitle = "Based on IUCN range data · red dots = sampling locations",
     caption  = "Colour = number of study species native to each country"
   ) +
   theme_void(base_size = 12) +
