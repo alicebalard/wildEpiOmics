@@ -12,10 +12,6 @@ method: WGBS                    # Sequencing method: WGBS or RRBS
 capture_years: "2021-2022"      # Year(s) samples were collected (e.g. "2019", "2018-2020")
 location: "Serengeti, Tanzania" # Geographical location of sampling
 
-# Realm: leave blank to use IUCN automatic value, or set manually
-# Choose one or more: terrestrial, freshwater, marine
-realm: terrestrial
-
 condition: NA                   # Experimental condition if relevant (e.g. "stress, captivity")
 data_url: https://www.ncbi.nlm.nih.gov/sra?...  # Link to raw data
 
