@@ -87,5 +87,15 @@
     "iucn_status": "LC",
     "iucn_url": "https://www.iucnredlist.org/species/22704992/254008192",
     "iucn_realm": {}
+  },
+  "Xyrichtys novacula": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/187696/70349216",
+    "iucn_realm": {}
+  },
+  "Mallotus villosus": {
+    "iucn_status": "LC",
+    "iucn_url": "https://www.iucnredlist.org/species/18155925/56707167",
+    "iucn_realm": {}
   }
 }
