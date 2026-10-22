@@ -1,0 +1,12 @@
+doi: 10.1098/rstb.2025.0031
+taxid: 13765
+individuals: 240
+tissue: fin
+method: epiGBS
+location: "Spain"
+condition: "fishing pressure"
+data_url: https://www.ebi.ac.uk/ena/browser/view/PRJEB90301
+notes: |
+  Fishing pressure induces DNA methylation changes in genetically homogeneous marine metapopulations.
+  ~300 differentially methylated sites between protected (marine reserve) and fished populations.
+  Genes relate to energy use, nerve cell excitability, and immune regulation.
