@@ -77,11 +77,23 @@
     "class": "Mammalia",
     "common_name": "gray short-tailed opossum"
   },
+  "13765": {
+    "species": "Xyrichtys novacula",
+    "order": "Labriformes",
+    "class": "Actinopteri",
+    "common_name": "pearly razorfish"
+  },
   "30422": {
     "species": "Corvus corone",
     "order": "Passeriformes",
     "class": "Aves",
     "common_name": "carrion crow"
+  },
+  "30960": {
+    "species": "Mallotus villosus",
+    "order": "Osmeriformes",
+    "class": "Actinopteri",
+    "common_name": "capelin"
   },
   "33528": {
     "species": "Gambusia affinis",
