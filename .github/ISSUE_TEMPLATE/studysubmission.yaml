@@ -54,15 +54,6 @@ body:
       required: true
 
   - type: input
-    id: capture_years
-    attributes:
-      label: year(s) of capture
-      description: Year or range of years when samples were collected, e.g. `2021` or `2018-2020`
-      placeholder: "2021"
-    validations:
-      required: false
-
-  - type: input
     id: location
     attributes:
       label: geographical location
